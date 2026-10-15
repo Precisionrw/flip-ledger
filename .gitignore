@@ -1,0 +1,4 @@
+site/
+.claude/
+flip-ledger-design-brief.md
+__pycache__/

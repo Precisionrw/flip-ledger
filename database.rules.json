@@ -1,0 +1,15 @@
+{
+  "rules": {
+    "users": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid",
+        "settings": { ".validate": "newData.isString() && newData.val().length < 100000" },
+        "est": { ".validate": "newData.isString() && newData.val().length < 200000" },
+        "route": { ".validate": "newData.isString() && newData.val().length < 20000" },
+        "items": { "$id": { ".validate": "newData.isString() && newData.val().length < 200000" } },
+        "$other": { ".validate": false }
+      }
+    }
+  }
+}

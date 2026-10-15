@@ -1,0 +1,1445 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark light">
+<title>Flip Ledger</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap">
+<style>
+/* ---------- Tokens ---------- */
+.th-dark{color-scheme:dark;--bg:#0B0D10;--side:#0F1215;--s1:#131619;--s2:#1B1F23;--s3:#24292E;--field:#1B1F23;--seg:#2A3036;--line:rgba(255,255,255,.08);--t1:#F2F4F6;--t2:#A1A8B1;--t3:#8A929C;--accent:#2B6FE3;--accent-hover:#3479EE;--accent-press:#2462CC;--accent-text:#7AAEFF;--route:#4A8CFF;--accent-tint:rgba(74,144,255,.14);--focus:rgba(74,144,255,.6);--pos:#3DB57F;--pos-tint:rgba(61,181,127,.14);--on-pos:#0B0D10;--neg:#F06A5F;--neg-solid:#C43D33;--neg-tint:rgba(240,106,95,.14);--warn:#E3A841;--warn-tint:rgba(227,168,65,.14);--st-viewing:#A592F7;--st-bought:#5EAEF0;--st-listed:#E3A841;--st-sold:#3DB57F;--st-passed:#8C939C;--c-purchase:#5B626C;--c-fees:#D97A5B;--c-ship:#CDA349;--c-gas:#8C80E0;--c-tolls:#CC6EA2;--c-extras:#4AA6A8;--c-profit:#3DB57F;--bar:#2E343B;--dot:#C9CFD6;--map:#131619;--card-shadow:none;--seg-shadow:0 1px 2px rgba(0,0,0,.4);--material:rgba(22,25,29,.76);--scrim:rgba(0,0,0,.5);--sheet-shadow:0 24px 64px rgba(0,0,0,.5);--toast-shadow:0 10px 30px rgba(0,0,0,.4)}
+.th-light{color-scheme:light;--bg:#F4F3EF;--side:#ECEBE6;--s1:#FFFFFF;--s2:#F1F0EC;--s3:#E7E5E0;--field:#F1F0EC;--seg:#FFFFFF;--line:rgba(24,22,18,.08);--t1:#16171A;--t2:#4A4E55;--t3:#5F636A;--accent:#0A62D6;--accent-hover:#1A6EE0;--accent-press:#0855BB;--accent-text:#0A62D6;--route:#0A62D6;--accent-tint:rgba(10,98,214,.08);--focus:rgba(10,98,214,.45);--pos:#116B40;--pos-tint:rgba(17,107,64,.1);--on-pos:#FFFFFF;--neg:#B4332A;--neg-solid:#B4332A;--neg-tint:rgba(180,51,42,.09);--warn:#8F5A00;--warn-tint:rgba(214,150,30,.14);--st-viewing:#6A4BD6;--st-bought:#1A5E9E;--st-listed:#8F5A00;--st-sold:#116B40;--st-passed:#5C6168;--c-purchase:#B9BDC3;--c-fees:#D9653F;--c-ship:#C8962A;--c-gas:#7565D6;--c-tolls:#C2558F;--c-extras:#2E9496;--c-profit:#1F9A5E;--bar:#D9D7D1;--dot:#2E3237;--map:#FFFFFF;--card-shadow:0 1px 2px rgba(24,20,12,.04),0 0 0 1px rgba(24,20,12,.05);--seg-shadow:0 1px 2px rgba(24,20,12,.12),0 0 0 .5px rgba(24,20,12,.06);--material:rgba(250,249,246,.8);--scrim:rgba(24,20,12,.26);--sheet-shadow:0 24px 64px rgba(24,20,12,.18);--toast-shadow:0 10px 30px rgba(24,20,12,.14)}
+
+/* ---------- Base ---------- */
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--t1)}
+body{font-family:'Geist',-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;font-size:15px;line-height:1.45;font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
+.mono{font-family:'Geist Mono',ui-monospace,'SF Mono',Menlo,monospace}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;padding:0;-webkit-tap-highlight-color:transparent;transition:background-color .2s cubic-bezier(.22,1,.36,1),transform .2s cubic-bezier(.22,1,.36,1),box-shadow .2s cubic-bezier(.22,1,.36,1)}
+input,select,textarea{font:inherit;color:inherit}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+input::placeholder,textarea::placeholder{color:var(--t3)}
+svg.ic{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.h1{margin:0;font-size:48px;line-height:52px;font-weight:600;letter-spacing:-.03em}
+
+/* ---------- Shell ---------- */
+.shell{display:flex;min-height:100vh;min-height:100dvh}
+.side{position:sticky;top:0;height:100vh;height:100dvh;flex:0 0 232px;background:var(--side);box-shadow:inset -1px 0 0 var(--line);padding:20px 12px;display:flex;flex-direction:column;gap:24px}
+.brand{display:flex;align-items:center;gap:12px;padding:4px 12px;font-size:15px;font-weight:600;letter-spacing:-.01em}
+.mark{width:28px;height:28px;border-radius:8px;background:var(--t1);display:flex;flex-direction:column;justify-content:center;gap:3px;padding:0 7px;flex:none}
+.mark i{display:block;height:2px;border-radius:1px;background:var(--bg)}
+.mark i:nth-child(2){width:70%}.mark i:nth-child(3){width:45%;background:var(--pos)}
+.nav{display:flex;flex-direction:column;gap:4px}
+.nav a{display:flex;align-items:center;gap:12px;height:36px;padding:0 12px;border-radius:12px;color:var(--t2);text-decoration:none;font-size:14px}
+.nav a:hover{background:var(--s2);color:var(--t1)}
+.nav a[aria-current="page"]{background:var(--s3);color:var(--t1);font-weight:500}
+.nav .ct{margin-left:auto;font-size:12px;color:var(--t3);font-weight:400}
+.side-foot{margin-top:auto;display:flex;align-items:center;gap:8px;padding:8px 12px;font-size:12px;color:var(--t2)}
+.dot8{width:8px;height:8px;border-radius:4px;background:var(--pos);flex:none}
+.main{flex:1;min-width:0;padding:48px 48px 64px;display:flex;flex-direction:column;gap:24px}
+.tabbar{display:none}
+@media (max-width:1023px) and (min-width:768px){
+  .side{flex-basis:72px;padding:20px 12px}
+  .brand span,.nav a span,.nav .ct,.side-foot span{display:none}
+  .brand{padding:4px 10px}
+  .nav a{justify-content:center;padding:0}
+  .side-foot{justify-content:center;padding:8px 0}
+  .main{padding:40px 32px 64px}
+}
+@media (max-width:767px){
+  .side{display:none}
+  .main{padding:calc(24px + env(safe-area-inset-top)) 16px calc(120px + env(safe-area-inset-bottom));gap:20px}
+  .h1{font-size:32px;line-height:38px;letter-spacing:-.02em}
+  .tabbar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:30;padding:0 4px env(safe-area-inset-bottom);background:var(--material);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);box-shadow:inset 0 1px 0 var(--line)}
+  .tabbar a{flex:1;min-height:49px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:var(--t3);text-decoration:none;font-size:10px;font-weight:500}
+  .tabbar a svg{width:24px;height:24px}
+  .tabbar a[aria-current="page"]{color:var(--accent-text)}
+  body.on-estimate .main{padding-bottom:calc(200px + env(safe-area-inset-bottom))}
+}
+
+/* ---------- Controls ---------- */
+.btn{height:44px;padding:0 20px;border-radius:999px;font-size:15px;font-weight:500;display:inline-flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap;text-decoration:none}
+.btn-pri{background:var(--accent);color:#fff}.btn-pri:hover{background:var(--accent-hover)}.btn-pri:active{background:var(--accent-press);transform:scale(.97)}
+.btn-sec{background:var(--s2);color:var(--t1)}.btn-sec:hover{background:var(--s3)}.btn-sec:active{transform:scale(.97)}
+.btn-plain{background:transparent;color:var(--t2)}.btn-plain:hover{background:var(--s2);color:var(--t1)}
+.btn-del{background:var(--neg-tint);color:var(--neg)}.btn-del:hover{background:color-mix(in srgb,var(--neg) 22%,transparent)}
+.btn-solid-del{background:var(--neg-solid);color:#fff}
+.btn-sm{height:36px;padding:0 16px;font-size:13px}
+.seg{display:flex;padding:2px;border-radius:999px;background:var(--s2);gap:2px}
+.seg button{flex:1;height:32px;padding:0 14px;border-radius:999px;font-size:13px;font-weight:500;color:var(--t2);white-space:nowrap}
+.seg button:hover{color:var(--t1)}
+.seg button[aria-pressed="true"]{background:var(--seg);box-shadow:var(--seg-shadow);color:var(--t1)}
+.seg.big{padding:3px;max-width:440px}.seg.big button{height:36px}
+.sw{width:51px;height:31px;border-radius:999px;padding:2px;display:flex;flex:none;background:var(--s3);justify-content:flex-start}
+.sw span{width:27px;height:27px;border-radius:14px;background:#fff;box-shadow:0 2px 4px rgba(0,0,0,.25);transition:width .2s}
+.sw:active span{width:33px}
+.sw[aria-checked="true"]{background:var(--pos);justify-content:flex-end}
+.chip{height:32px;padding:0 12px;border-radius:999px;background:var(--s2);color:var(--t1);font-size:13px;font-weight:500;display:inline-flex;align-items:center;gap:8px;white-space:nowrap;flex:none}
+.chip:hover{background:var(--s3)}.chip:active{transform:scale(.95)}
+.chip .ct{color:var(--t3)}
+.chip[aria-pressed="true"]{background:var(--t1);color:var(--bg)}
+.chip[aria-pressed="true"] .ct{color:var(--bg);opacity:.64}
+.chip.ghost{background:transparent;box-shadow:inset 0 0 0 1px var(--line);color:var(--accent-text);padding:0 12px 0 8px;gap:4px}
+.pill{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 10px;border-radius:999px;font-size:12px;font-weight:500;white-space:nowrap;flex:none}
+.pill i{width:6px;height:6px;border-radius:3px;background:currentColor}
+.st-viewing{color:var(--st-viewing);background:color-mix(in srgb,var(--st-viewing) 14%,transparent)}
+.st-bought{color:var(--st-bought);background:color-mix(in srgb,var(--st-bought) 14%,transparent)}
+.st-listed{color:var(--st-listed);background:color-mix(in srgb,var(--st-listed) 14%,transparent)}
+.st-sold{color:var(--st-sold);background:color-mix(in srgb,var(--st-sold) 14%,transparent)}
+.st-passed{color:var(--st-passed);background:color-mix(in srgb,var(--st-passed) 14%,transparent)}
+.tag{height:28px;padding:0 12px;border-radius:999px;display:inline-flex;align-items:center;gap:5px;font-size:13px;color:var(--t2);background:var(--s2);white-space:nowrap}
+.tag b{color:var(--t1);font-weight:600}
+.tone-pos{color:var(--pos)!important;background:var(--pos-tint)!important;font-weight:600}
+.tone-warn{color:var(--warn)!important;background:var(--warn-tint)!important;font-weight:600}
+.tone-neg{color:var(--neg)!important;background:var(--neg-tint)!important;font-weight:600}
+.card{background:var(--s1);border-radius:20px;box-shadow:var(--card-shadow)}
+.fld{height:36px;border-radius:999px;background:var(--field);display:flex;align-items:center;gap:8px;padding:0 12px}
+.fld input,.fld select{flex:1;min-width:0;border:0;background:transparent;outline:none;font-size:13px;color:var(--t1);appearance:none;-webkit-appearance:none}
+.fld:focus-within{box-shadow:0 0 0 2px var(--accent),0 0 0 5px var(--accent-tint)}
+.fld input:focus-visible,.fld select:focus-visible{outline:none}
+
+/* ---------- Grouped lists (iOS) ---------- */
+.grp{display:flex;flex-direction:column;gap:8px}
+.grp > h2,.grp > h3{margin:0;padding:0 16px;font-size:13px;font-weight:600;color:var(--t2)}
+.grp > p{margin:0;padding:0 16px;font-size:12px;line-height:1.45;color:var(--t3)}
+.list{background:var(--s1);border-radius:20px;box-shadow:var(--card-shadow);overflow:hidden}
+.row{position:relative;display:flex;align-items:center;gap:12px;min-height:50px;padding:4px 16px;width:100%;text-align:left}
+.row + .row::before{content:"";position:absolute;top:0;left:16px;right:0;height:1px;background:var(--line)}
+.row.li + .row::before,.row + .row.li::before{left:68px}
+.row > label,.row > .lb{flex:none;font-size:15px;color:var(--t1)}
+.row:focus-within{background:color-mix(in srgb,var(--accent) 6%,transparent)}
+.row:has(:focus-visible){box-shadow:inset 0 0 0 2px var(--focus)}
+.val{flex:1;min-width:0;display:flex;align-items:center;justify-content:flex-end;gap:4px;align-self:stretch}
+.val input,.val select{flex:1;min-width:0;width:100%;min-height:42px;border:0;background:transparent;outline:none;font-size:15px;color:var(--t1);text-align:right;text-align-last:right;padding:0;appearance:none;-webkit-appearance:none}
+.val input:focus-visible,.val select:focus-visible{outline:none}
+.val input[type="date"]{flex:0 1 160px}
+.u{font-size:15px;color:var(--t3);flex:none}
+.add-row{color:var(--accent-text)}
+.add-row:hover{background:var(--s2)}
+textarea.note{display:block;width:100%;border:0;background:transparent;padding:12px 16px;font-size:15px;line-height:1.5;color:var(--t1);resize:vertical;outline:none;min-height:96px}
+@media (max-width:767px){.row{min-height:52px}.row > label,.row > .lb,.val input,.val select,.u{font-size:17px}}
+
+/* ---------- Estimate ---------- */
+.est{display:flex;flex-wrap:wrap;gap:32px;align-items:flex-start}
+.est-form{flex:1 1 440px;max-width:600px;min-width:0;display:flex;flex-direction:column;gap:28px}
+.est-result{flex:0 1 480px;min-width:380px;position:sticky;top:24px;display:flex;flex-direction:column;gap:12px}
+.chips{display:flex;gap:8px;flex-wrap:wrap;padding:12px 16px}
+.res{padding:32px 32px 28px;display:flex;flex-direction:column;gap:28px}
+.price{display:flex;align-items:flex-start;white-space:nowrap}
+.price .d{font-size:112px;line-height:.86;font-weight:600;letter-spacing:-.055em}
+.price .c{font-size:44px;line-height:1;font-weight:300;letter-spacing:-.02em;color:var(--t2);margin:6px 0 0 4px}
+.cbar{display:flex;gap:2px;height:6px}
+.cbar > i{display:block;border-radius:3px;min-width:3px;transition:flex-grow .4s cubic-bezier(.22,1,.36,1)}
+.rc{display:grid;grid-template-columns:16px minmax(0,1fr) auto;align-items:baseline;padding:6px 0}
+.rc .dt{width:6px;height:6px;border-radius:3px;align-self:start;margin-top:8px}
+.rc .l,.rc .a{font-size:15px}
+.rc .a{text-align:right}
+.rc .f{grid-column:2/4;font-size:12px;line-height:1.4;color:var(--t3);margin-top:1px}
+.rc.net .l,.rc.net .a{font-size:17px;font-weight:600}
+.hr{height:1px;background:var(--line);margin:8px 0}
+.cg{display:flex;flex-direction:column;gap:10px}
+.cg-h{display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-size:13px}
+.cg-h b{font-weight:600;color:var(--t2)}.cg-h span{color:var(--t3);text-align:right}
+.cg-g{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.opt{text-align:left;padding:16px;border-radius:12px;background:var(--s2);display:flex;flex-direction:column;gap:3px;min-width:0;min-height:120px}
+.opt:hover{background:var(--s3)}.opt:active{transform:scale(.98)}
+.opt[aria-pressed="true"]{background:var(--accent-tint);box-shadow:inset 0 0 0 1.5px var(--accent)}
+.opt .top{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px;font-weight:500;color:var(--t2);margin-bottom:6px}
+.opt[aria-pressed="true"] .top{color:var(--t1)}
+.radio{width:20px;height:20px;border-radius:10px;box-shadow:inset 0 0 0 1.5px var(--t3);flex:none}
+[aria-pressed="true"] .radio{background:#fff;box-shadow:inset 0 0 0 6px var(--accent)}
+.opt .v{font-size:24px;line-height:28px;font-weight:600;letter-spacing:-.02em}
+.opt .s{font-size:12px;color:var(--t3)}
+.opt .b{margin-top:auto;padding-top:8px;font-size:12px;font-weight:600;color:var(--pos)}
+.maxbuy{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 20px;border-radius:12px;background:var(--s2)}
+.maxbuy input{width:56px;border:0;background:transparent;outline:none;font-size:15px;font-weight:600;color:var(--t1);padding:0;box-shadow:inset 0 -1px 0 var(--t3)}
+.res-foot{display:flex;gap:8px;align-items:center;padding:16px 20px;background:var(--s2)}
+.pbar{display:none}
+@media (max-width:767px){
+  .est-result{display:none}
+  .est-form{max-width:none}
+  .seg.big{max-width:none}
+  .chips{flex-wrap:nowrap;overflow-x:auto;scroll-snap-type:x proximity;scrollbar-width:none;-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 28px),transparent)}
+  .chips::-webkit-scrollbar{display:none}
+  .chips .chip{height:40px;padding:0 16px;font-size:15px;scroll-snap-align:start}
+  body.on-estimate .pbar{display:flex;position:fixed;z-index:31;left:8px;right:8px;bottom:calc(57px + env(safe-area-inset-bottom));height:76px;border-radius:20px;background:var(--material);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);box-shadow:0 10px 30px rgba(0,0,0,.28),inset 0 0 0 1px var(--line);flex-direction:column;align-items:stretch;padding:8px 16px 12px 20px;text-align:left;touch-action:none}
+  .price .d{font-size:88px}.price .c{font-size:34px}
+  .res{padding:8px 20px 24px}
+}
+
+/* ---------- Inventory ---------- */
+.toolbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.toolbar .filters{display:flex;gap:8px;flex-wrap:wrap;flex:1 1 auto}
+.banner{display:flex;align-items:center;gap:12px;padding:8px 8px 8px 20px;border-radius:20px;background:var(--s2);font-size:14px;color:var(--t2)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(320px,100%),1fr));gap:16px}
+.inv{background:var(--s1);border-radius:20px;box-shadow:var(--card-shadow);padding:24px;display:flex;flex-direction:column;gap:20px;text-align:left;min-width:0;width:100%}
+.inv:hover{background:var(--s2)}.inv:active{transform:scale(.985)}
+.inv .nm{font-size:20px;line-height:24px;font-weight:600;letter-spacing:-.015em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.inv .sb{font-size:13px;color:var(--t2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prog{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px}
+.prog i{display:block;height:4px;border-radius:2px;background:var(--s3)}
+.fig{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.fig span{display:flex;flex-direction:column;gap:4px;min-width:0;font-size:12px;color:var(--t3)}
+.fig b{font-size:17px;line-height:20px;font-weight:600;color:var(--t1);white-space:nowrap}
+.inv .ft{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:24px;font-size:13px;color:var(--t2)}
+.badge{height:24px;padding:0 10px;border-radius:999px;display:inline-flex;align-items:center;font-size:12px;font-weight:600;white-space:nowrap;color:var(--t2);background:var(--s2)}
+.tbl{background:var(--s1);border-radius:20px;box-shadow:var(--card-shadow);overflow-x:auto}
+.tr{display:grid;grid-template-columns:minmax(240px,2.4fr) 110px 110px 130px 100px 120px 110px 90px;align-items:center;font-size:14px;min-width:1010px;text-decoration:none;color:var(--t1);width:100%;text-align:left}
+.tr > *{padding:0 16px;white-space:nowrap;text-align:right;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.tr > *:nth-child(-n+3){text-align:left}
+.tr.th > *{font-size:12px;font-weight:500;color:var(--t3);height:44px;display:flex;align-items:center}
+.tr.th > *:nth-child(n+4){justify-content:flex-end}
+button.tr{min-height:48px;box-shadow:inset 0 1px 0 var(--line)}
+button.tr:hover{background:var(--s2)}
+.empty{padding:48px;display:flex;flex-direction:column;gap:16px;align-items:flex-start;max-width:880px}
+.empty .ico{width:56px;height:56px;border-radius:12px;background:var(--s2);color:var(--t2);display:flex;align-items:center;justify-content:center}
+.steps-row{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:24px}
+.steps-row li{display:flex;flex-direction:column;gap:8px;font-size:13px;color:var(--t2)}
+
+/* ---------- Sheet ---------- */
+.ov{position:fixed;inset:0;z-index:50}
+.ov .scrim{position:absolute;inset:0;background:var(--scrim);animation:fade .32s cubic-bezier(.22,1,.36,1)}
+.sheet{position:absolute;top:12px;right:12px;bottom:12px;width:min(560px,calc(100% - 24px));background:var(--bg);border-radius:28px;box-shadow:var(--sheet-shadow),inset 0 0 0 1px var(--line);display:flex;flex-direction:column;overflow:hidden;animation:inR .32s cubic-bezier(.22,1,.36,1)}
+.sheet-top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 12px 0 24px;min-height:56px}
+.sheet-body{flex:1;overflow-y:auto;padding:8px 24px 32px;display:flex;flex-direction:column;gap:32px}
+.sheet-foot{padding:12px 16px 12px 24px;background:var(--s1);box-shadow:inset 0 1px 0 var(--line);display:flex;align-items:center;gap:8px}
+.grab{display:none}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@keyframes inR{from{transform:translateX(40px);opacity:0}to{transform:none;opacity:1}}
+@keyframes inU{from{transform:translateY(60px);opacity:.6}to{transform:none;opacity:1}}
+@media (max-width:767px){
+  .sheet{top:calc(48px + env(safe-area-inset-top));left:0;right:0;bottom:0;width:auto;border-radius:28px 28px 0 0;animation:inU .32s cubic-bezier(.22,1,.36,1)}
+  .sheet-body{padding:8px 16px 24px}
+  .sheet-foot{padding:12px 16px calc(12px + env(safe-area-inset-bottom));flex-wrap:wrap}
+  .grab{display:flex;justify-content:center;padding-top:8px}
+  .grab span{width:36px;height:5px;border-radius:3px;background:var(--s3)}
+  .sheet-top{padding:4px 8px 0 20px}
+}
+.stepper{position:relative}
+.stepper .ln{position:absolute;left:12.5%;right:12.5%;top:25px;height:2px;background:var(--s3)}
+.stepper .fill{position:absolute;left:12.5%;top:25px;height:2px;transition:width .4s cubic-bezier(.22,1,.36,1)}
+.stepper ol{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));position:relative}
+.step{display:flex;flex-direction:column;align-items:center;gap:8px;padding:8px 0;border-radius:12px;width:100%}
+.step:hover{background:var(--s2)}
+.step i{width:36px;height:36px;border-radius:18px;display:flex;align-items:center;justify-content:center;background:var(--bg);box-shadow:inset 0 0 0 1.5px var(--s3);color:var(--bg)}
+.step b{font-size:15px;font-weight:600}
+.step small{font-size:13px;color:var(--t3)}
+.li{min-height:64px;padding:8px 16px}
+.tile{width:40px;height:40px;border-radius:12px;background:var(--s2);color:var(--t2);display:flex;align-items:center;justify-content:center;flex:none}
+.tile.on{background:var(--pos);color:var(--on-pos)}
+.li .tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.li .tx input{border:0;background:transparent;outline:none;font-size:15px;font-weight:600;color:var(--t1);padding:0;min-width:0;width:100%}
+.li .tx small{font-size:13px;color:var(--t3)}
+.li .tx small.on{color:var(--pos)}
+.li .am{display:flex;flex-direction:column;align-items:flex-end;gap:2px;width:96px;flex:none}
+.li .am label{display:flex;align-items:center;justify-content:flex-end;gap:2px;width:100%}
+.li .am input{border:0;background:transparent;outline:none;text-align:right;padding:0;min-width:0;width:100%}
+.li .am .s input{font-size:15px;font-weight:600;color:var(--t1)}
+.li .am .h,.li .am .h input{font-size:12px;color:var(--t3)}
+.li .am .h input{width:40px;flex:none}
+.li .am .p{font-size:12px;font-weight:600;color:var(--pos)}
+.x{width:32px;height:32px;border-radius:16px;color:var(--t3);display:flex;align-items:center;justify-content:center;flex:none}
+.x:hover{background:var(--s2);color:var(--t1)}
+.chk i{width:24px;height:24px;border-radius:12px;box-shadow:inset 0 0 0 1.5px var(--t3);display:flex;align-items:center;justify-content:center;flex:none;color:var(--on-pos)}
+.chk[aria-checked="true"] i{background:var(--pos);box-shadow:none}
+.chk[aria-checked="false"] svg{visibility:hidden}
+.chk:hover{background:var(--s2)}
+
+/* ---------- Route ---------- */
+.route-top{display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start}
+.ropt{text-align:left;padding:20px;border-radius:20px;background:var(--s1);box-shadow:var(--card-shadow);display:flex;align-items:center;gap:16px;width:100%}
+.ropt:hover{background:var(--s2)}.ropt:active{transform:scale(.985)}
+.ropt[aria-pressed="true"]{background:var(--accent-tint);box-shadow:inset 0 0 0 1.5px var(--accent)}
+.ropt .tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.ropt .t{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:600}
+.ropt .s{font-size:13px;color:var(--t3)}
+.ropt .v{font-size:32px;line-height:36px;font-weight:600;letter-spacing:-.03em;white-space:nowrap}
+.cheap{font-size:12px;font-weight:600;color:var(--pos);background:var(--pos-tint);padding:2px 8px;border-radius:999px}
+.mapcard{background:var(--map);border-radius:20px;box-shadow:var(--card-shadow);overflow:hidden;display:flex;flex-direction:column}
+.mapwrap{position:relative;margin:16px 32px 24px;aspect-ratio:960/600}
+.mapwrap canvas,.mapwrap svg{position:absolute;inset:0;width:100%;height:100%}
+.arc{stroke-dasharray:1;stroke-dashoffset:1;animation:draw .9s cubic-bezier(.22,1,.36,1) .15s forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+.pin{position:absolute;width:14px;height:14px;transform:translate(-50%,-50%)}
+.pin .halo{position:absolute;left:50%;top:50%;width:72px;height:72px;margin:-36px 0 0 -36px;border-radius:50%}
+.pin .pulse{position:absolute;inset:0;border-radius:50%;animation:pulse 2.4s cubic-bezier(.22,1,.36,1) infinite}
+@keyframes pulse{0%{transform:scale(1);opacity:.55}100%{transform:scale(3.2);opacity:0}}
+.pin .core{position:absolute;inset:0;border-radius:50%;box-shadow:0 0 0 2.5px var(--map),0 0 12px 2px currentColor}
+.pin .lb{position:absolute;bottom:22px;left:50%;transform:translateX(-50%);font-size:12px;font-weight:600;white-space:nowrap;color:var(--t1);padding:2px 8px;border-radius:999px;background:color-mix(in srgb,var(--map) 80%,transparent);backdrop-filter:blur(8px)}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));box-shadow:inset 0 1px 0 var(--line)}
+.stat{padding:20px 24px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.stat + .stat{box-shadow:inset 1px 0 0 var(--line)}
+.stat small{font-size:12px;font-weight:500;color:var(--t3)}
+.stat b{font-size:32px;line-height:36px;font-weight:600;letter-spacing:-.03em}
+.stat span{font-size:12px;color:var(--t3)}
+@media (max-width:767px){.mapwrap{margin:12px}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.stat:nth-child(3){box-shadow:inset 0 1px 0 var(--line)}.stat:nth-child(4){box-shadow:inset 1px 0 0 var(--line),inset 0 1px 0 var(--line)}.stat b{font-size:24px}}
+
+/* ---------- Monthly ---------- */
+.mhead{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.icb{width:36px;height:36px;border-radius:18px;background:var(--s1);box-shadow:var(--card-shadow);color:var(--t2);display:flex;align-items:center;justify-content:center}
+.icb:hover{background:var(--s2);color:var(--t1)}
+.icb:disabled{opacity:.4;cursor:default}
+.kgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line);border-radius:20px;overflow:hidden;box-shadow:var(--card-shadow)}
+.k{background:var(--s1);padding:20px 24px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.k small{font-size:13px;color:var(--t2)}
+.k b{font-size:28px;line-height:34px;font-weight:600;letter-spacing:-.025em;margin-top:4px;white-space:nowrap}
+.k span{font-size:12px;color:var(--t3)}
+.k.hero{grid-column:span 2;grid-row:span 2;padding:32px;justify-content:space-between;gap:24px}
+.k.hero .price .d{font-size:96px}.k.hero .price .c{font-size:36px}
+@media (max-width:1023px){.kgrid{grid-template-columns:repeat(2,minmax(0,1fr))}.k.hero{grid-column:span 2;grid-row:auto}}
+@media (max-width:767px){.k.hero .price .d{font-size:72px}.k.hero .price .c{font-size:28px}.k b{font-size:22px}}
+.panel{background:var(--s1);border-radius:20px;box-shadow:var(--card-shadow)}
+.ph{display:flex;justify-content:space-between;align-items:baseline;gap:16px}
+.ph h2{margin:0;font-size:15px;font-weight:600}.ph span{font-size:13px;color:var(--t3)}
+.chart{position:relative;height:240px;display:flex}
+.barb{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:8px;height:100%;border-radius:12px;padding:0 2px;min-width:0;position:relative;z-index:1}
+.barb:hover i{filter:brightness(1.15)}
+.barb i{display:block;width:min(28px,60%);border-radius:4px 4px 1px 1px;transition:height .4s cubic-bezier(.22,1,.36,1)}
+.barb .bv{font-size:13px;font-weight:600;color:var(--pos)}
+.barb .bm{height:18px;font-size:12px;color:var(--t3)}
+.barb[aria-pressed="true"] .bm{color:var(--t1);font-weight:600}
+.leg{display:grid;grid-template-columns:16px minmax(0,1fr) 56px 112px;align-items:center;min-height:40px;font-size:15px;box-shadow:inset 0 -1px 0 var(--line)}
+.legs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:48px}
+@media (max-width:767px){.legs{grid-template-columns:1fr}}
+.ar{display:grid;grid-template-columns:minmax(240px,2.6fr) 104px 72px 72px 88px 56px 88px 88px 88px 104px;align-items:center;font-size:14px;min-width:1060px;width:100%;text-align:left}
+.ar > *{padding:0 12px;white-space:nowrap;text-align:right;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.ar > *:nth-child(-n+2){text-align:left}
+.ar.ah > *{font-size:12px;font-weight:500;color:var(--t3);padding-bottom:12px}
+button.ar{min-height:52px;box-shadow:inset 0 1px 0 var(--line)}
+button.ar:hover{background:var(--s2)}
+
+/* ---------- Settings ---------- */
+.set-cols{display:flex;flex-wrap:wrap;gap:32px 40px;align-items:flex-start}
+.set-cols > div{display:flex;flex-direction:column;gap:32px;min-width:0}
+.sf{height:36px;border-radius:12px;background:var(--field);display:flex;align-items:center;gap:4px;padding:0 10px}
+.sf input{flex:1;min-width:0;width:100%;border:0;background:transparent;outline:none;font-size:15px;text-align:right}
+.sf input:focus-visible{outline:none}
+.sf span{font-size:13px;color:var(--t3);white-space:nowrap}
+.sf:focus-within{box-shadow:0 0 0 2px var(--accent),0 0 0 5px var(--accent-tint)}
+.qp{height:30px;padding:0 4px 0 12px;border-radius:999px;background:var(--s2);font-size:13px;font-weight:500;display:inline-flex;align-items:center;gap:2px;white-space:nowrap}
+.qp button{width:24px;height:24px;border-radius:12px;color:var(--t3);display:flex;align-items:center;justify-content:center}
+.qp button:hover{background:var(--s3);color:var(--t1)}
+
+/* ---------- Toast ---------- */
+#toast{position:fixed;left:50%;bottom:32px;transform:translateX(-50%);z-index:80;pointer-events:none}
+@media (max-width:767px){#toast{bottom:calc(150px + env(safe-area-inset-bottom))}}
+.toast{display:flex;align-items:center;gap:10px;height:44px;padding:0 18px 0 13px;border-radius:999px;background:var(--s3);color:var(--t1);font-size:14px;box-shadow:var(--toast-shadow);animation:tin .3s cubic-bezier(.22,1,.36,1);white-space:nowrap}
+.toast i{width:20px;height:20px;border-radius:10px;background:var(--pos);color:var(--on-pos);display:flex;align-items:center;justify-content:center}
+@keyframes tin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}.arc{stroke-dashoffset:0}}
+</style>
+</head>
+<body>
+<noscript>Flip Ledger needs JavaScript turned on.</noscript>
+<div class="shell">
+  <aside class="side" aria-label="Sidebar">
+    <div class="brand"><div class="mark" aria-hidden="true"><i></i><i></i><i></i></div><span>Flip Ledger</span></div>
+    <nav class="nav" aria-label="Main" id="nav"></nav>
+    <div class="side-foot"><span class="dot8"></span><span id="savedLabel">Saved on this device</span></div>
+  </aside>
+  <main class="main" id="main" tabindex="-1"></main>
+</div>
+<nav class="tabbar" aria-label="Main" id="tabbar"></nav>
+<button class="pbar" id="pbar" type="button" data-act="openResult"></button>
+<div id="overlay"></div>
+<div id="toast" role="status" aria-live="polite"></div>
+<script>
+'use strict';
+/* ================= Utilities ================= */
+const $ = (s, r = document) => r.querySelector(s);
+const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const n = (v) => { const x = parseFloat(String(v == null ? '' : v).replace(/[^0-9.\-]/g, '')); return isFinite(x) ? x : 0; };
+const MINUS = '−';
+const money = (x, plus) => { const s = (Math.round(Math.abs(x) * 100) / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); return (x < -0.004 ? MINUS : (plus && x > 0.004 ? '+' : '')) + '$' + s; };
+const whole = (x, plus) => (x < -0.5 ? MINUS : (plus && x >= 0.5 ? '+' : '')) + '$' + Math.round(Math.abs(x)).toLocaleString('en-US');
+const cost = (x) => (x > 0.004 ? money(-x) : '$0.00');
+const uid = () => Math.random().toString(36).slice(2, 10);
+const pad = (x) => String(x).padStart(2, '0');
+const isoOf = (d) => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+const today = () => isoOf(new Date());
+const addDays = (iso, k) => { const d = parseISO(iso); d.setDate(d.getDate() + k); return isoOf(d); };
+const parseISO = (iso) => { const [y, m, d] = String(iso).split('-').map(Number); return new Date(y, (m || 1) - 1, d || 1); };
+const fmtD = (iso) => iso ? parseISO(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
+const daysBetween = (a, b) => Math.round((parseISO(b) - parseISO(a)) / 86400000);
+const monthKey = (iso) => String(iso).slice(0, 7);
+const monthName = (key) => { const [y, m] = key.split('-').map(Number); return new Date(y, m - 1, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }); };
+const monthShort = (key) => { const [y, m] = key.split('-').map(Number); return new Date(y, m - 1, 1).toLocaleDateString('en-US', { month: 'short' }); };
+const shiftMonth = (key, k) => { const [y, m] = key.split('-').map(Number); const d = new Date(y, m - 1 + k, 1); return d.getFullYear() + '-' + pad(d.getMonth() + 1); };
+const sum = (a, f) => a.reduce((t, x) => t + (f ? f(x) : x), 0);
+const reduced = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const narrow = () => window.matchMedia('(max-width: 767px)').matches;
+
+/* ================= Icons ================= */
+const P = {
+  estimate: '<path d="M4.5 16a7.5 7.5 0 1 1 15 0"/><path d="M12 16l3.5-4"/><path d="M4.5 19.5h15"/>',
+  inventory: '<path d="M4 7.5 12 3.5l8 4v9l-8 4-8-4z"/><path d="M4 7.5l8 4 8-4M12 11.5v9"/>',
+  route: '<circle cx="6" cy="18" r="2"/><circle cx="18" cy="6" r="2"/><path d="M8 18h7.5a3 3 0 0 0 0-6h-7a3 3 0 0 1 0-6H16"/>',
+  monthly: '<path d="M4 20h16"/><path d="M7 16v-4M12 16V7M17 16v-6"/>',
+  settings: '<path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>', x: '<path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/>', check: '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+  chev: '<path d="M7 10l5 5 5-5"/>', updown: '<path d="M8 9.5 12 5.5l4 4M8 14.5l4 4 4-4"/>', left: '<path d="M14.5 6.5 9 12l5.5 5.5"/>', right: '<path d="M9.5 6.5 15 12l-5.5 5.5"/>',
+  out: '<path d="M8 16 16 8M9.5 8H16v6.5"/>', export: '<path d="M12 4v11M8 8l4-4 4 4"/><path d="M6 12v6.5A1.5 1.5 0 0 0 7.5 20h9a1.5 1.5 0 0 0 1.5-1.5V12"/>',
+  search: '<circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/>', up: '<path d="M7 14l5-5 5 5"/>',
+  GPU: '<path d="M5 7h14a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2z"/><circle cx="9" cy="12" r="2.5"/><circle cx="15.5" cy="12" r="2.5"/>',
+  CPU: '<rect x="7" y="7" width="10" height="10" rx="1.5"/><path d="M9 4v3M12 4v3M15 4v3M9 17v3M12 17v3M15 17v3M4 9h3M4 12h3M4 15h3M17 9h3M17 12h3M17 15h3"/>',
+  Motherboard: '<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M7.5 7.5h4.5v4.5H7.5zM15.5 7v10M7.5 15.5h4.5"/>',
+  RAM: '<rect x="3" y="8" width="18" height="8" rx="1.5"/><path d="M7 11v2M11 11v2M15 11v2M5 19h14"/>',
+  Storage: '<rect x="3" y="8" width="18" height="8" rx="2"/><path d="M6.5 12h6M16.5 12h1"/>',
+  'Power supply': '<rect x="4" y="5" width="16" height="14" rx="2"/><circle cx="12" cy="12" r="4"/><path d="M12 8v8M8 12h8"/>',
+  Case: '<rect x="7" y="3" width="10" height="18" rx="2"/><path d="M10 7h4M10 10h4"/><circle cx="12" cy="16" r="1.5"/>',
+  'CPU cooler': '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="1.5"/><path d="M12 10.5c0-3 1-5 3-5M13.5 12c3 0 5 1 5 3M12 13.5c0 3-1 5-3 5M10.5 12c-3 0-5-1-5-3"/>',
+  Monitor: '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M9 20h6M12 16v4"/>',
+  part: '<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M9 12h6"/>'
+};
+const ic = (name, size, extra) => `<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"${size ? ` style="width:${size}px;height:${size}px${extra ? ';' + extra : ''}"` : ''}>${P[name] || P.part}</svg>`;
+
+/* ================= State ================= */
+const STATUSES = ['viewing', 'bought', 'listed', 'sold'];
+const DK = { viewing: 'viewed', bought: 'bought', listed: 'listed', sold: 'sold' };
+const ST_LABEL = { viewing: 'Viewing', bought: 'Bought', listed: 'Listed', sold: 'Sold', passed: 'Passed' };
+const DEFAULT_SETTINGS = () => ({
+  homeZip: '', mpg: '25', gas: '3.20', roundTrip: true, target: '250', warnDays: '21',
+  paypalPct: '3.49', paypalFixed: '0.49', ebayPct: '13.25', ebayFixed: '0.40',
+  tiers: ['25', '35', '45', '55'], theme: 'system',
+  cats: {
+    GPU: ['RTX 5090', 'RTX 4090', 'RTX 3090', 'RX 9070 XT'], CPU: ['Ryzen 7 9800X3D', 'Ryzen 7 5800X3D', 'Core i7-14700K'],
+    Motherboard: ['B650 Tomahawk', 'X670E Hero'], RAM: ['32GB DDR5 6000', '32GB DDR4 3600'], Storage: ['2TB NVMe Gen4', '1TB NVMe'],
+    'Power supply': ['850W Gold', '1000W Platinum'], Case: ['Lancool 216', 'O11 Dynamic'], 'CPU cooler': ['360mm AIO', 'NH-D15'], Monitor: ['27in 1440p 165Hz']
+  }
+});
+const CHECKS_SINGLE = ['Stress test, 20 min', 'Temps', 'Fans spin up', 'Coil whine', 'Every port works', 'Serial photographed'];
+const CHECKS_PC = ['Boots to desktop', 'RAM runs at rated speed', 'Drives healthy', 'Stress test, 20 min', 'Temps', 'Photos of every part'];
+
+function blankDraft(st) {
+  return { mode: 'single', category: 'GPU', item: '', brand: '', buy: '', sell: '', pay: 'paypal', buyerShip: '', sellerZip: '', miles: '', hours: '',
+    mpg: st.mpg, gasPrice: st.gas, roundTrip: st.roundTrip, tolls: 'avoid', tollEach: '', avoidMi: '', avoidMin: '', buyerZip: '', shipping: '', extras: '',
+    pcName: '', pcBuy: '', parts: [], wholeSell: '', wholeShip: '', pcSell: 'parts', target: st.target };
+}
+function exampleDraft(st) {
+  return Object.assign(blankDraft(st), { item: 'RTX 5090', brand: 'Founders Edition', buy: '2000', sell: '2600', miles: '171', hours: '2.8', tollEach: '6.40', avoidMi: '9', avoidMin: '12', shipping: '45',
+    pcName: '5800X3D / RTX 3080 build', pcBuy: '650', wholeSell: '850',
+    parts: [['CPU', 'Ryzen 7 5800X3D', 260, 12], ['GPU', 'RTX 3080 10GB', 380, 25], ['Motherboard', 'B550 Tomahawk', 110, 15], ['RAM', '32GB DDR4 3600', 60, 8], ['Storage', '1TB NVMe', 50, 6], ['Power supply', '750W Gold', 70, 18], ['Case', 'Lancool II Mesh', 60, 30], ['CPU cooler', '240mm AIO', 40, 15]].map(([c, m, s, sh]) => ({ id: uid(), cat: c, model: m, sell: String(s), ship: String(sh), sold: '' })) });
+}
+function baseItem(o) {
+  return Object.assign({ id: uid(), kind: 'single', status: 'viewing', name: '', brand: '', category: 'GPU', where: '', serial: '', dates: {}, buy: '', sell: '', pay: 'paypal', shipping: '', buyerShip: '', extras: '',
+    sellerZip: '', miles: '', hours: '', mpg: '25', gasPrice: '3.20', roundTrip: true, tolls: 'avoid', tollEach: '', avoidMi: '', avoidMin: '', parts: [], wholeSell: '', wholeShip: '', checks: {}, notes: '', example: false }, o);
+}
+function seedExamples() {
+  const t = today(), D = (k) => addDays(t, k);
+  const P8 = [['CPU', 'Ryzen 7 5800X3D', 260, 12, -7], ['GPU', 'RTX 3080 10GB', 380, 25, 0], ['Motherboard', 'B550 Tomahawk', 110, 15, 0], ['RAM', '32GB DDR4 3600', 60, 8, -2], ['Storage', '1TB NVMe', 50, 6, -5], ['Power supply', '750W Gold', 70, 18, 0], ['Case', 'Lancool II Mesh', 60, 30, 0], ['CPU cooler', '240mm AIO', 40, 15, 0]];
+  const P9 = [['CPU', 'Ryzen 7 7800X3D', 300, 12], ['GPU', 'RTX 4080', 820, 30], ['Motherboard', 'B650 Aorus Elite', 130, 15], ['RAM', '32GB DDR5 6000', 85, 8], ['Storage', '2TB NVMe Gen4', 95, 6], ['Power supply', '850W Gold', 85, 18], ['Case', 'Lancool 216', 60, 0], ['CPU cooler', '360mm AIO', 55, 15], ['Storage', '1TB SATA SSD', 10, 5]];
+  const items = [
+    baseItem({ name: 'RTX 4090', brand: 'Gigabyte Aorus Master', where: 'Craigslist', status: 'viewing', dates: { viewed: D(-1) }, buy: '1700', sell: '1950', shipping: '45', miles: '120', hours: '2' }),
+    baseItem({ name: '2TB NVMe Gen4', brand: 'Samsung 990 Pro', category: 'Storage', where: 'Facebook Marketplace', status: 'viewing', dates: { viewed: t }, buy: '90', sell: '135', shipping: '6', miles: '6', hours: '0.2' }),
+    baseItem({ name: 'RX 9070 XT', brand: 'PowerColor Red Devil', where: 'Facebook Marketplace', serial: 'PCRD9070XT24B0417736', status: 'bought', dates: { viewed: D(-6), bought: D(-5) }, buy: '560', sell: '720', shipping: '30', extras: '8', sellerZip: '47906', miles: '58', hours: '1.1', checks: { 0: true, 1: true, 2: true }, notes: 'Hotspot 88°C after 20 minutes of Time Spy. Original box, no receipt. Repaste before listing.' }),
+    baseItem({ name: 'RTX 4070 Super', brand: 'ASUS Dual', status: 'bought', dates: { viewed: D(-4), bought: D(-4) }, buy: '430', sell: '520', shipping: '25', miles: '40', hours: '0.8' }),
+    baseItem({ kind: 'pc', name: '7800X3D / RTX 4080 build', category: 'PC', where: 'OfferUp', status: 'bought', dates: { viewed: D(-3), bought: D(-2) }, buy: '1150', miles: '95', hours: '1.6', wholeSell: '1500', parts: P9.map(([c, m, s, sh]) => ({ id: uid(), cat: c, model: m, sell: String(s), ship: String(sh), sold: '' })) }),
+    baseItem({ kind: 'pc', name: '5800X3D / RTX 3080 build', category: 'PC', where: 'Craigslist', status: 'listed', dates: { viewed: D(-20), bought: D(-19), listed: D(-17) }, buy: '650', miles: '183', hours: '3', tollEach: '6.40', avoidMi: '9', avoidMin: '14', wholeSell: '850', checks: { 0: true, 1: true, 2: true, 3: true }, notes: 'GPU has a bent fan shroud clip, priced in. Case ships badly, so local pickup only.', parts: P8.map(([c, m, s, sh, k]) => ({ id: uid(), cat: c, model: m, sell: String(s), ship: String(sh), sold: k ? D(k) : '' })) }),
+    baseItem({ name: 'Ryzen 7 9800X3D', brand: 'Boxed', category: 'CPU', status: 'listed', dates: { viewed: D(-25), bought: D(-25), listed: D(-23) }, buy: '390', sell: '455', shipping: '12', miles: '30', hours: '0.6' }),
+    baseItem({ name: 'RTX 5090', brand: 'Founders Edition', status: 'sold', dates: { viewed: D(-13), bought: D(-12), listed: D(-11), sold: D(-3) }, buy: '2000', sell: '2600', shipping: '45', miles: '171', hours: '2.8', tollEach: '6.40', avoidMi: '9', avoidMin: '12' }),
+    baseItem({ name: 'RTX 3090', brand: 'Founders Edition', status: 'sold', dates: { viewed: D(-17), bought: D(-16), listed: D(-15), sold: D(-10) }, buy: '620', sell: '760', shipping: '25', miles: '60', hours: '1.1' }),
+    baseItem({ name: '32GB DDR5 6000', brand: 'G.Skill Trident Z5', category: 'RAM', pay: 'cash', status: 'sold', dates: { viewed: D(-11), bought: D(-11), listed: D(-10), sold: D(-8) }, buy: '70', sell: '105', miles: '12', hours: '0.3' }),
+    baseItem({ name: 'RTX 3080 Ti', brand: 'Founders Edition', status: 'passed', dates: { viewed: D(-10), passed: D(-10) }, buy: '480', sell: '500', shipping: '25', miles: '140', hours: '2.4' })
+  ];
+  const HIST = [
+    [1, [['RTX 4090', 'Founders Edition', 1150, 1720, 42], ['RTX 3080', 'EVGA FTW3', 300, 485, 25], ['Ryzen 5 5600X', 'Boxed', 70, 120, 10], ['1000W PSU', 'Corsair RM1000x', 75, 155, 18], ['RX 7900 XT', 'Sapphire Pulse', 470, 600, 30]]],
+    [2, [['RTX 4080', 'Founders Edition', 720, 1020, 40], ['RX 6800 XT', 'XFX Merc 319', 300, 465, 30], ['2TB NVMe', 'WD SN850X', 60, 110, 8]]],
+    [3, [['RTX 3070', 'Founders Edition', 230, 360, 25], ['RX 6800', 'Sapphire Pulse', 250, 395, 28]]],
+    [4, [['RTX 3060 Ti', 'Gigabyte Eagle', 190, 275, 20], ['Core i5-12600K', 'Boxed', 110, 172, 10]]]
+  ];
+  HIST.forEach(([mb, list]) => list.forEach(([name, brand, buy, sell, ship], i) => {
+    const sold = addDays(t, -(mb * 30 + i * 4 + 2));
+    items.push(baseItem({ name, brand, pay: 'paypal', status: 'sold', dates: { viewed: addDays(sold, -9), bought: addDays(sold, -8), listed: addDays(sold, -7), sold }, buy: String(buy), sell: String(sell), shipping: String(ship), miles: '25', hours: '0.5' }));
+  }));
+  items.forEach((it) => { it.example = true; });
+  return items;
+}
+
+const KEY = 'flipledger.v1';
+let S;
+function loadState() {
+  let saved = null;
+  try { const raw = localStorage.getItem(KEY); if (raw) saved = JSON.parse(raw); } catch (e) { saved = null; }
+  const settings = Object.assign(DEFAULT_SETTINGS(), saved && saved.settings);
+  S = {
+    settings,
+    items: saved && Array.isArray(saved.items) ? saved.items : seedExamples(),
+    est: saved && saved.est ? Object.assign(blankDraft(settings), saved.est) : exampleDraft(settings),
+    route: Object.assign({ to: '60601', tollEach: '6.40', avoidMi: '9', avoidMin: '14', avoid: true, zoom: 'us' }, saved && saved.route),
+    zip: (saved && saved.zip) || {},
+    ui: { screen: 'estimate', filter: 'all', cat: 'all', q: '', view: 'grid', sheet: null, confirm: false, month: null, resultOpen: false, lastProfit: null, setConfirm: '' }
+  };
+}
+let saveTimer = 0;
+function saveSoon() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    try { localStorage.setItem(KEY, JSON.stringify({ settings: S.settings, items: S.items, est: S.est, route: S.route, zip: S.zip })); $('#savedLabel').textContent = 'Saved on this device'; }
+    catch (e) { $('#savedLabel').textContent = 'Not saved, storage is off'; }
+  }, 250);
+}
+
+/* ================= Math ================= */
+function fee(pay, amount, count) {
+  const s = S.settings;
+  if (!(amount > 0)) return 0;
+  if (pay === 'paypal') return amount * n(s.paypalPct) / 100 + n(s.paypalFixed) * count;
+  if (pay === 'ebay') return amount * n(s.ebayPct) / 100 + n(s.ebayFixed) * count;
+  return 0;
+}
+function feeLabel(pay) { return pay === 'paypal' ? 'PayPal fees' : pay === 'ebay' ? 'eBay fees' : 'Fees'; }
+function feeHint(pay) { const s = S.settings; return pay === 'paypal' ? `PayPal takes ${s.paypalPct}% + $${n(s.paypalFixed).toFixed(2)} of what the buyer pays.` : pay === 'ebay' ? `eBay takes ${s.ebayPct}% + $${n(s.ebayFixed).toFixed(2)} per order.` : 'No fees on cash. Meet somewhere public.'; }
+/* d: draft or item. how: single | parts | whole. buy: price paid. */
+function calc(d, how, avoid, buy) {
+  const s = S.settings, trips = d.roundTrip ? 2 : 1;
+  const mpg = n(d.mpg) || n(s.mpg), gp = d.gasPrice === '' || d.gasPrice == null ? n(s.gas) : n(d.gasPrice);
+  const mi = (n(d.miles) + (avoid ? n(d.avoidMi) : 0)) * trips;
+  const hrs = (n(d.hours) + (avoid ? n(d.avoidMin) / 60 : 0)) * trips;
+  const gas = mpg > 0 ? mi / mpg * gp : 0;
+  const tolls = avoid ? 0 : n(d.tollEach) * trips;
+  let sales;
+  if (how === 'parts') sales = (d.parts || []).map((p) => ({ price: n(p.sell), ship: n(p.ship) }));
+  else if (how === 'whole') sales = [{ price: n(d.wholeSell), ship: n(d.wholeShip) }];
+  else sales = [{ price: n(d.sell), ship: n(d.shipping) }];
+  const count = sales.filter((x) => x.price > 0).length;
+  const sale = sum(sales, (x) => x.price);
+  const bship = how === 'parts' ? 0 : n(d.buyerShip);
+  const rev = sale + bship;
+  const fees = fee(d.pay, rev, Math.max(count, rev > 0 ? 1 : 0));
+  const ship = sum(sales, (x) => x.ship);
+  const extras = n(d.extras);
+  const profit = rev - buy - fees - ship - gas - tolls - extras;
+  const basis = buy + gas + tolls + extras;
+  return { sale, bship, rev, fees, ship, buy, extras, count, profit, mi, hrs, gas, tolls, mpg, gp, trips,
+    roi: basis > 0 ? profit / basis : 0, perHr: hrs > 0 ? profit / hrs : 0, margin: rev > 0 ? profit / rev : 0 };
+}
+function rating(r) {
+  if (r.profit < 0 || r.margin < 0.08) return ['Not worth it', 'neg'];
+  if (r.margin < 0.15) return ['Thin margin', 'warn'];
+  return ['Strong deal', 'pos'];
+}
+const itemHow = (it) => it.kind === 'pc' ? 'parts' : 'single';
+const itemCalc = (it, avoid) => calc(it, itemHow(it), avoid == null ? it.tolls === 'avoid' : avoid, n(it.buy));
+function partShare(it, p) {
+  const tot = sum(it.parts, (q) => n(q.sell)) || 1;
+  const share = n(p.sell) / tot;
+  const r = itemCalc(it);
+  const c = n(it.buy) * share + (r.gas + r.tolls + r.extras) * share + fee(it.pay, n(p.sell), 1) + n(p.ship);
+  return { share, cost: c, profit: n(p.sell) - c, purchase: n(it.buy) * share, gas: r.gas * share, tolls: r.tolls * share, extras: r.extras * share, fees: fee(it.pay, n(p.sell), 1), ship: n(p.ship) };
+}
+function statusOf(it) {
+  if (it.dates.passed && it.status === 'passed') return 'passed';
+  return it.status;
+}
+function syncPcStatus(it) {
+  if (it.kind !== 'pc' || !it.parts.length) return;
+  const sold = it.parts.filter((p) => p.sold);
+  if (sold.length === it.parts.length) {
+    it.status = 'sold'; it.dates.sold = sold.map((p) => p.sold).sort().pop();
+    if (!it.dates.bought) it.dates.bought = it.dates.viewed || it.dates.sold;
+    if (!it.dates.listed) it.dates.listed = it.dates.bought;
+  } else if (it.status === 'sold') { it.status = 'listed'; delete it.dates.sold; }
+  else if (sold.length && (it.status === 'viewing' || it.status === 'bought')) { it.status = 'listed'; if (!it.dates.bought) it.dates.bought = today(); if (!it.dates.listed) it.dates.listed = today(); }
+}
+
+/* ================= ZIP lookup (free, no key) ================= */
+const zipWait = {};
+function lookupZip(zip) {
+  zip = String(zip || '').trim();
+  if (!/^\d{5}$/.test(zip)) return Promise.resolve(null);
+  if (S.zip[zip]) return Promise.resolve(S.zip[zip]);
+  if (zipWait[zip]) return zipWait[zip];
+  zipWait[zip] = fetch('https://api.zippopotam.us/us/' + zip).then((r) => r.ok ? r.json() : null).then((j) => {
+    if (!j || !j.places || !j.places[0]) return null;
+    const p = j.places[0];
+    const v = { lat: +p.latitude, lng: +p.longitude, city: p['place name'], st: p['state abbreviation'] };
+    S.zip[zip] = v; saveSoon(); return v;
+  }).catch(() => null).finally(() => { delete zipWait[zip]; });
+  return zipWait[zip];
+}
+function roadMiles(a, b) {
+  const R = 3958.8, r = Math.PI / 180;
+  const dLat = (b.lat - a.lat) * r, dLng = (b.lng - a.lng) * r;
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(a.lat * r) * Math.cos(b.lat * r) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(h)) * 1.18;
+}
+async function milesBetween(z1, z2) {
+  const [a, b] = await Promise.all([lookupZip(z1), lookupZip(z2)]);
+  if (!a || !b) return null;
+  const mi = Math.round(roadMiles(a, b));
+  return { mi, hrs: Math.round(mi / 57 * 10) / 10, a, b };
+}
+function tierFor(mi) { const t = S.settings.tiers; return n(mi < 300 ? t[0] : mi < 800 ? t[1] : mi < 1500 ? t[2] : t[3]); }
+
+/* ================= Theme ================= */
+const mq = window.matchMedia('(prefers-color-scheme: dark)');
+function applyTheme() {
+  const t = S.settings.theme === 'system' ? (mq.matches ? 'dark' : 'light') : S.settings.theme;
+  document.documentElement.className = t === 'light' ? 'th-light' : 'th-dark';
+  const meta = document.querySelector('meta[name="theme-color"]') || Object.assign(document.head.appendChild(document.createElement('meta')), { name: 'theme-color' });
+  meta.content = t === 'light' ? '#F4F3EF' : '#0B0D10';
+}
+mq.addEventListener && mq.addEventListener('change', () => { applyTheme(); if (S.ui.screen === 'route') drawMap(); });
+
+/* ================= Shell ================= */
+const SCREENS = [['estimate', 'Estimate'], ['inventory', 'Inventory'], ['route', 'Route'], ['monthly', 'Monthly'], ['settings', 'Settings']];
+function renderNav() {
+  const active = S.items.filter((i) => i.status !== 'sold' && i.status !== 'passed').length;
+  $('#nav').innerHTML = SCREENS.map(([k, l]) => `<a href="#${k}" ${S.ui.screen === k ? 'aria-current="page"' : ''} title="${l}">${ic(k)}<span>${l}</span>${k === 'inventory' && active ? `<span class="ct">${active}</span>` : ''}</a>`).join('');
+  $('#tabbar').innerHTML = SCREENS.map(([k, l]) => `<a href="#${k}" ${S.ui.screen === k ? 'aria-current="page"' : ''}>${ic(k)}${l}</a>`).join('');
+}
+function render() {
+  document.body.className = 'on-' + S.ui.screen;
+  renderNav();
+  const m = $('#main');
+  m.innerHTML = ({ estimate: viewEstimate, inventory: viewInventory, route: viewRoute, monthly: viewMonthly, settings: viewSettings })[S.ui.screen]();
+  if (S.ui.screen === 'route') { requestAnimationFrame(refreshRoute); }
+  if (S.ui.screen === 'estimate') { renderPbar(); countUp(); }
+  renderOverlay();
+}
+function toast(msg) {
+  const t = $('#toast');
+  t.innerHTML = `<div class="toast"><i>${ic('check', 13, 'stroke-width:2.25')}</i>${esc(msg)}</div>`;
+  clearTimeout(toast.t); toast.t = setTimeout(() => { t.innerHTML = ''; }, 2600);
+}
+
+/* ================= Field helpers ================= */
+const fid = (path) => 'f-' + path.replace(/[^a-z0-9]/gi, '-');
+function row(label, path, value, o = {}) {
+  const id = fid(path);
+  return `<div class="row"><label for="${id}">${label}</label><div class="val">${o.pre ? `<span class="u">${o.pre}</span>` : ''}<input id="${id}" data-f="${path}" value="${esc(value)}"${o.type ? ` type="${o.type}"` : ''} inputmode="${o.mode || 'decimal'}"${o.max ? ` maxlength="${o.max}"` : ''} placeholder="${esc(o.ph == null ? '0' : o.ph)}"${o.w ? ` style="flex:0 1 ${o.w}px${o.mono ? ";font-family:'Geist Mono',ui-monospace,monospace;font-size:14px" : ''}"` : (o.mono ? ` style="font-family:'Geist Mono',ui-monospace,monospace;font-size:14px"` : '')}>${o.suf ? `<span class="u">${o.suf}</span>` : ''}</div></div>`;
+}
+function textRow(label, path, value, ph) { return row(label, path, value, { mode: 'text', ph: ph || '' }); }
+function selRow(label, path, value, opts) {
+  const id = fid(path);
+  return `<div class="row"><label for="${id}">${label}</label><div class="val"><select id="${id}" data-f="${path}">${opts.map((o) => `<option${o === value ? ' selected' : ''}>${esc(o)}</option>`).join('')}</select>${ic('updown', 16, 'color:var(--t3)')}</div></div>`;
+}
+function swRow(label, path, on) { const id = fid(path); return `<div class="row"><span class="lb" id="${id}">${label}</span><div class="val"><button class="sw" role="switch" aria-checked="${!!on}" aria-labelledby="${id}" data-act="toggle" data-f="${path}"><span></span></button></div></div>`; }
+function seg(path, cur, opts, cls) { return `<div class="seg ${cls || ''}" role="group">${opts.map(([v, l]) => `<button type="button" aria-pressed="${String(cur) === String(v)}" data-act="set" data-f="${path}" data-v="${v}">${l}</button>`).join('')}</div>`; }
+function segRow(label, path, cur, opts, w) { return `<div class="row"><span class="lb">${label}</span><div class="val"><div style="width:${w || 300}px;max-width:100%">${seg(path, cur, opts)}</div></div></div>`; }
+const PAY_OPTS = [['paypal', 'PayPal G&amp;S'], ['ebay', 'eBay'], ['cash', 'Cash']];
+const catList = () => Object.keys(S.settings.cats);
+
+/* ================= Estimate ================= */
+function estCalc() {
+  const d = S.est, pc = d.mode === 'pc', avoid = d.tolls === 'avoid';
+  const how = pc ? d.pcSell : 'single', buy = n(pc ? d.pcBuy : d.buy);
+  return { d, pc, avoid, how, buy, r: calc(d, how, avoid, buy), rt: calc(d, how, false, buy), ra: calc(d, how, true, buy),
+    rp: pc ? calc(d, 'parts', avoid, buy) : null, rw: pc ? calc(d, 'whole', avoid, buy) : null };
+}
+function viewEstimate() {
+  const d = S.est, pc = d.mode === 'pc', st = S.settings;
+  const picks = st.cats[d.category] || [];
+  const itemT = d.item.trim();
+  const singleGroup = `
+  <section class="grp"><h2>What you're buying</h2><div class="list">
+    ${selRow('Category', 'est.category', d.category, catList())}
+    ${textRow('Item', 'est.item', d.item, 'RTX 4090')}
+    ${textRow('Brand / model', 'est.brand', d.brand, 'Founders Edition')}
+    <div class="row" style="padding:0"><div class="chips" id="picks" role="group" aria-label="Quick picks" style="width:100%">${picksHTML(picks, itemT, d.category)}</div></div>
+  </div><p>Tap a quick pick to fill the item. Manage them in Settings.</p></section>`;
+  const pcGroup = `
+  <section class="grp"><h2>PC to part out</h2><div class="list">
+    ${textRow('Name', 'est.pcName', d.pcName, '5800X3D / RTX 3080 build')}
+  </div></section>
+  <section class="grp"><h2 id="partsSum">${partsSummary(d)}</h2><div class="list">
+    ${d.parts.map((p, i) => partRow('est', p, i, false)).join('')}
+    <button class="row add-row" type="button" data-act="addPart" data-t="est">${ic('plus', 18)}Add a part</button>
+  </div><p>Sell price on top, shipping below. Each part pays its own fee and its own shipping.</p></section>
+  <section class="grp"><h2>Or sell it whole</h2><div class="list">
+    ${row('Price', 'est.wholeSell', d.wholeSell, { pre: '$', w: 120 })}
+    ${row('Shipping', 'est.wholeShip', d.wholeShip, { pre: '$', w: 120, ph: '0 · local' })}
+  </div><p>Only used to compare against parting it out.</p></section>`;
+  return `
+  <h1 class="h1">Is it worth the drive?</h1>
+  <div class="est">
+    <div class="est-form">
+      ${seg('est.mode', d.mode, [['single', 'Single item'], ['pc', 'PC to part out']], 'big')}
+      ${pc ? pcGroup : singleGroup}
+      <section class="grp"><h2>Prices</h2><div class="list">
+        ${row(pc ? 'Paid for the whole PC' : 'Buy price', pc ? 'est.pcBuy' : 'est.buy', pc ? d.pcBuy : d.buy, { pre: '$', w: 140 })}
+        ${pc ? '' : row('Sell price', 'est.sell', d.sell, { pre: '$', w: 140 })}
+        ${segRow('Paid with', 'est.pay', d.pay, PAY_OPTS)}
+        ${pc ? '' : row('Buyer pays shipping', 'est.buyerShip', d.buyerShip, { pre: '$', w: 140, ph: 'Optional' })}
+      </div><p id="payHint">${feeHint(d.pay)}</p></section>
+      <section class="grp"><h2>Pickup drive</h2><div class="list">
+        ${row('Seller ZIP', 'est.sellerZip', d.sellerZip, { mode: 'numeric', max: 5, ph: '60601', mono: true })}
+        ${row('Miles, one way', 'est.miles', d.miles, { suf: 'mi', w: 100 })}
+        ${row('Drive time, one way', 'est.hours', d.hours, { suf: 'hrs', w: 100 })}
+        ${row('Fuel economy', 'est.mpg', d.mpg, { suf: 'mpg', w: 100, ph: st.mpg })}
+        ${row('Gas price', 'est.gasPrice', d.gasPrice, { pre: '$', suf: '/gal', w: 80, ph: st.gas })}
+        ${swRow('Round trip', 'est.roundTrip', d.roundTrip)}
+      </div><p id="driveSum">${driveSummary()}</p></section>
+      <section class="grp"><h2>Tolls</h2><div class="list">
+        ${segRow('Route', 'est.tolls', d.tolls, [['take', 'Take tolls'], ['avoid', 'Avoid tolls']])}
+        ${row('Tolls each way', 'est.tollEach', d.tollEach, { pre: '$', w: 100 })}
+        ${row('No-toll route adds', 'est.avoidMi', d.avoidMi, { suf: 'mi', w: 80 })}
+        ${row('and', 'est.avoidMin', d.avoidMin, { suf: 'min', w: 80 })}
+      </div><p>All each way. The comparison counts both ways when round trip is on.</p></section>
+      <section class="grp"><h2>Shipping and extras</h2><div class="list">
+        ${row('Buyer ZIP', 'est.buyerZip', d.buyerZip, { mode: 'numeric', max: 5, ph: 'Optional', mono: true })}
+        ${pc ? '' : row('Shipping cost', 'est.shipping', d.shipping, { pre: '$', w: 100 })}
+        ${row('Extras', 'est.extras', d.extras, { pre: '$', w: 100 })}
+      </div><p id="shipHint">${shipHint()}</p></section>
+    </div>
+    <aside class="est-result" aria-label="Result"><div class="card" style="overflow:hidden" id="result">${resultHTML()}</div></aside>
+  </div>`;
+}
+function picksHTML(picks, itemT, cat) {
+  const save = itemT && picks.indexOf(itemT) < 0;
+  return picks.map((p) => `<button class="chip" type="button" aria-pressed="${p === itemT}" data-act="pick" data-v="${esc(p)}">${esc(p)}</button>`).join('')
+    + (save ? `<button class="chip ghost" type="button" data-act="savePick">${ic('plus', 15)}Save to ${esc(cat)}</button>` : '')
+    + (!picks.length && !save ? '<span style="font-size:13px;color:var(--t3);padding:6px 0">No quick picks for this category yet.</span>' : '');
+}
+function partsSummary(d) { return `Parts · ${d.parts.length} part${d.parts.length === 1 ? '' : 's'}, ${whole(sum(d.parts, (p) => n(p.sell)))} if all sell`; }
+function driveSummary() {
+  const { r } = estCalc(), d = S.est;
+  return `${Math.round(r.mi)} mi ${d.roundTrip ? 'round trip' : 'one way'} · ${r.hrs.toFixed(1)} hrs · ${money(r.gas)} gas.` + (S.ui.zipMsg ? ' ' + S.ui.zipMsg : '');
+}
+function shipHint() {
+  return (S.est.mode === 'pc' ? 'Part-out shipping is set per part. ' : (S.ui.shipMsg || 'A buyer ZIP estimates shipping by distance. ')) + 'Extras covers pads, paste, boxes and cleaning.';
+}
+function partRow(t, p, i, item) {
+  const base = `${t}.parts.${i}`;
+  const soldOn = !!p.sold;
+  return `<div class="row li">
+    ${item ? `<button type="button" class="tile${soldOn ? ' on' : ''}" data-act="partSold" data-i="${i}" aria-label="${soldOn ? 'Mark ' + esc(p.model) + ' unsold' : 'Mark ' + esc(p.model || 'part') + ' sold today'}" aria-pressed="${soldOn}">${soldOn ? ic('check', 20, 'stroke-width:2.25') : ic(p.cat, 22)}</button>` : `<span class="tile" aria-hidden="true">${ic(p.cat, 22)}</span>`}
+    <span class="tx"><input aria-label="Part ${i + 1} model" data-f="${base}.model" value="${esc(p.model)}" placeholder="Model">
+      <small class="${soldOn ? 'on' : ''}"><select aria-label="Part ${i + 1} category" data-f="${base}.cat" style="border:0;background:transparent;color:inherit;font:inherit;padding:0;appearance:none;-webkit-appearance:none;outline:none">${catList().map((c) => `<option${c === p.cat ? ' selected' : ''}>${esc(c)}</option>`).join('')}</select>${soldOn ? ' · Sold ' + fmtD(p.sold) : ''}</small></span>
+    <span class="am"><label class="s"><span style="color:var(--t3)">$</span><input aria-label="Part ${i + 1} sell price" inputmode="decimal" data-f="${base}.sell" value="${esc(p.sell)}" placeholder="0"></label>
+      <label class="h">ship $<input aria-label="Part ${i + 1} shipping" inputmode="decimal" data-f="${base}.ship" value="${esc(p.ship)}" placeholder="0"></label>
+      ${item && soldOn ? `<span class="p" data-pp="${i}">${money(partShare(item, p).profit, true)}</span>` : ''}</span>
+    <button type="button" class="x" data-act="rmPart" data-t="${t}" data-i="${i}" aria-label="Remove ${esc(p.model || 'part')}">${ic('x', 16)}</button>
+  </div>`;
+}
+function priceHTML(v, color) {
+  const c = Math.round(Math.abs(v) * 100);
+  return `<div class="price" style="color:${color}"><span class="d" data-num="${v}">${v < 0 ? MINUS : ''}$${Math.floor(c / 100).toLocaleString('en-US')}</span><span class="c">.${pad(c % 100)}</span></div>`;
+}
+function resultHTML() {
+  const { d, pc, avoid, r, rt, ra, rp, rw } = estCalc();
+  const empty = r.rev === 0 && r.buy === 0;
+  if (empty) return `<div class="res"><div style="display:flex;flex-direction:column;gap:16px"><span style="font-size:13px;font-weight:500;color:var(--t2)">You'd make</span><div class="price" style="color:var(--s3)"><span class="d">$0</span></div><p style="margin:0;font-size:15px;color:var(--t2)">Add a buy price and a sell price to see what you'd make.</p><button class="btn btn-sec btn-sm" style="align-self:flex-start" data-act="example">Use the example</button></div></div>${resFoot()}`;
+  const [rl, tone] = rating(r);
+  const color = r.profit < 0 ? 'var(--neg)' : 'var(--pos)';
+  const defs = [['Purchase', '--c-purchase', r.buy], ['Fees', '--c-fees', r.fees], ['Shipping', '--c-ship', r.ship], ['Gas', '--c-gas', r.gas], ['Tolls', '--c-tolls', r.tolls], ['Extras', '--c-extras', r.extras], ['Profit', '--c-profit', Math.max(r.profit, 0)]];
+  const tot = sum(defs, (x) => x[2]) || 1;
+  const s = S.settings;
+  const pct = d.pay === 'paypal' ? s.paypalPct : s.ebayPct, fx = n(d.pay === 'paypal' ? s.paypalFixed : s.ebayFixed).toFixed(2);
+  const feeF = d.pay === 'cash' ? 'Cash, no fees' : (r.count > 1 ? `${r.count} sales × (${pct}% + $${fx})` : `${pct}% × ${whole(r.rev)} + $${fx}`);
+  const crow = (label, val, v, f) => `<div class="rc"><span class="dt" style="background:var(${v})"></span><span class="l">${label}</span><span class="a">${cost(val)}</span>${f ? `<span class="f">${f}</span>` : ''}</div>`;
+  const opt = (sel, title, res, sub, better, act, v) => `<button type="button" class="opt" aria-pressed="${sel}" data-act="set" data-f="${act}" data-v="${v}"><span class="top">${title}<span class="radio"></span></span><span class="v" style="color:${res.profit < 0 ? 'var(--neg)' : 'var(--t1)'}">${money(res.profit)}</span><span class="s">${sub}</span><span class="b" style="visibility:${better ? 'visible' : 'hidden'}">Better</span></button>`;
+  const td = ra.profit - rt.profit, noTolls = n(d.tollEach) === 0 && n(d.avoidMi) === 0;
+  const maxBuy = r.profit + r.buy - n(d.target);
+  return `<div class="res">
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <span style="font-size:13px;font-weight:500;color:var(--t2)">${r.profit < 0 ? "You'd lose" : "You'd make"}</span>
+      <div aria-live="polite">${priceHTML(r.profit, color)}</div>
+      <span style="font-size:15px;color:var(--t2)">on a ${whole(r.rev)} sale · ${(r.margin * 100).toFixed(1)}% margin</span>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px"><span class="tag tone-${tone}">${rl}</span><span class="tag">ROI <b>${Math.round(r.roi * 100)}%</b></span><span class="tag">Per hour driving <b>${whole(r.perHr)}</b></span></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div class="cbar" role="img" aria-label="Where the sale goes: ${defs.filter((x) => x[2] > 0).map((x) => x[0] + ' ' + Math.round(x[2] / tot * 100) + '%').join(', ')}">${defs.filter((x) => x[2] > 0).map((x) => `<i style="flex:${(x[2] / tot * 100).toFixed(3)} 1 0;background:var(${x[1]})"></i>`).join('')}</div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--t3)"><span>Where the ${whole(r.rev)} goes</span><span style="color:${color}">${r.profit >= 0 ? Math.round(r.profit / (r.rev || 1) * 100) + '% is yours' : 'Costs run ' + money(-r.profit) + ' over'}</span></div>
+    </div>
+    <div>
+      <div class="rc"><span></span><span class="l">${pc ? (d.pcSell === 'parts' ? 'Parts sold' : 'Sold whole') : 'Sale price'}</span><span class="a">${money(r.sale)}</span>${pc && d.pcSell === 'parts' ? `<span class="f">${r.count} parts, sold one at a time</span>` : ''}</div>
+      ${r.bship > 0 ? `<div class="rc"><span></span><span class="l">Buyer paid shipping</span><span class="a">${money(r.bship)}</span></div>` : ''}
+      <div class="hr"></div>
+      ${crow(pc ? 'Paid for the PC' : 'Buy price', r.buy, '--c-purchase')}
+      ${crow(feeLabel(d.pay), r.fees, '--c-fees', feeF)}
+      ${crow('Shipping', r.ship, '--c-ship', pc && d.pcSell === 'parts' ? r.count + ' boxes' : '')}
+      ${crow('Gas', r.gas, '--c-gas', r.gas > 0 ? `${Math.round(r.mi)} mi ÷ ${r.mpg} mpg × $${r.gp.toFixed(2)}` : '')}
+      ${crow('Tolls', r.tolls, '--c-tolls', avoid ? 'Avoiding toll roads' : `${r.trips} × ${money(n(d.tollEach))}`)}
+      ${crow('Extras', r.extras, '--c-extras')}
+      <div class="hr"></div>
+      <div class="rc net" style="padding-top:8px"><span></span><span class="l">Net profit</span><span class="a" style="color:${color}">${money(r.profit, true)}</span></div>
+    </div>
+    ${noTolls ? '' : `<div class="cg"><div class="cg-h"><b>Route</b><span>${Math.abs(td) < 0.005 ? 'Same either way' : td > 0 ? 'Avoiding tolls earns ' + money(td) + ' more' : 'Toll roads earn ' + money(-td) + ' more'}</span></div><div class="cg-g">
+      ${opt(!avoid, 'Take toll roads', rt, `${rt.hrs.toFixed(1)} hrs · ${money(rt.tolls)} tolls`, rt.profit > ra.profit + 0.004, 'est.tolls', 'take')}
+      ${opt(avoid, 'Avoid tolls', ra, `${ra.hrs.toFixed(1)} hrs · +${Math.round(n(d.avoidMi) * r.trips)} mi`, ra.profit > rt.profit + 0.004, 'est.tolls', 'avoid')}</div></div>`}
+    ${pc ? `<div class="cg"><div class="cg-h"><b>Sale</b><span>${Math.abs(rp.profit - rw.profit) < 0.005 ? 'Same either way' : rp.profit > rw.profit ? 'Parting out earns ' + money(rp.profit - rw.profit) + ' more' : 'Selling whole earns ' + money(rw.profit - rp.profit) + ' more'}</span></div><div class="cg-g">
+      ${opt(d.pcSell === 'parts', 'Part out', rp, `${rp.count} sales · ${money(rp.fees + rp.ship)} fees and shipping`, rp.profit > rw.profit + 0.004, 'est.pcSell', 'parts')}
+      ${opt(d.pcSell === 'whole', 'Sell whole', rw, `1 sale · ${money(rw.fees + rw.ship)} fees and shipping`, rw.profit > rp.profit + 0.004, 'est.pcSell', 'whole')}</div></div>` : ''}
+    <div class="maxbuy"><div style="display:flex;flex-direction:column;gap:6px;min-width:0"><span style="font-size:13px;color:var(--t2)">Most you should pay to clear</span><label style="display:flex;align-items:center;gap:4px;font-size:15px"><span style="color:var(--t3)">$</span><input aria-label="Target profit" inputmode="decimal" data-f="est.target" value="${esc(d.target)}"><span style="color:var(--t2)">profit</span></label></div><span style="font-size:32px;font-weight:600;letter-spacing:-.02em;color:var(--accent-text);white-space:nowrap">${maxBuy > 0 ? whole(maxBuy) : 'Not reachable'}</span></div>
+  </div>${resFoot()}`;
+}
+function resFoot() { return `<div class="res-foot"><button class="btn btn-pri" style="flex:1" data-act="saveEst" data-v="viewing">Save as Viewing</button><button class="btn btn-sec" style="background:var(--s3)" data-act="saveEst" data-v="bought">I bought it</button><button class="btn btn-plain" data-act="clearEst">Clear</button></div>`; }
+function renderPbar() {
+  const b = $('#pbar');
+  if (S.ui.screen !== 'estimate') { b.innerHTML = ''; return; }
+  const { r, pc, d } = estCalc();
+  const [rl, tone] = rating(r);
+  const c = Math.round(Math.abs(r.profit) * 100);
+  b.setAttribute('aria-label', `${r.profit < 0 ? "You'd lose" : "You'd make"} ${money(r.profit)}, ${rl}. Open the full receipt`);
+  b.innerHTML = `<span aria-hidden="true" style="align-self:center;width:36px;height:4px;border-radius:2px;background:var(--t3);opacity:.5;margin-bottom:4px"></span>
+  <span style="display:flex;align-items:center;gap:8px"><span style="flex:1;min-width:0;display:flex;align-items:baseline;gap:8px;white-space:nowrap"><span style="font-size:15px;color:var(--t2)">${pc && d.pcSell === 'parts' ? 'Part out' : (r.profit < 0 ? "You'd lose" : "You'd make")}</span>
+  <span style="font-size:28px;line-height:32px;font-weight:600;letter-spacing:-.035em;color:${r.profit < 0 ? 'var(--neg)' : 'var(--pos)'}">${r.profit < 0 ? MINUS : ''}$${Math.floor(c / 100).toLocaleString('en-US')}<span style="font-size:17px;font-weight:300;letter-spacing:0;color:var(--t2)">.${pad(c % 100)}</span></span></span>
+  <span class="tag tone-${tone}">${rl}</span></span>`;
+}
+function refreshEst() {
+  const res = $('#result'); if (res) { res.innerHTML = resultHTML(); countUp(); }
+  const ds = $('#driveSum'); if (ds) ds.textContent = driveSummary();
+  const ps = $('#partsSum'); if (ps) ps.textContent = partsSummary(S.est);
+  const sh = $('#shipHint'); if (sh) sh.textContent = shipHint();
+  const pk = $('#picks'); if (pk) pk.innerHTML = picksHTML(S.settings.cats[S.est.category] || [], S.est.item.trim(), S.est.category);
+  renderPbar();
+  if (S.ui.resultOpen) { const sb = $('#rsheet'); if (sb) sb.innerHTML = resultHTML(); }
+}
+function countUp() {
+  const el = $('#result .price .d[data-num]');
+  if (!el) return;
+  const to = +el.dataset.num, from = S.ui.lastProfit;
+  S.ui.lastProfit = to;
+  if (from == null || from === to || reduced()) return;
+  const cEl = el.nextElementSibling, t0 = performance.now(), dur = 400;
+  const step = (t) => {
+    const k = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - k, 3), v = from + (to - from) * e;
+    const c = Math.round(Math.abs(v) * 100);
+    el.textContent = (v < 0 ? MINUS : '') + '$' + Math.floor(c / 100).toLocaleString('en-US');
+    cEl.textContent = '.' + pad(c % 100);
+    if (k < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+
+/* ================= Inventory ================= */
+function cardData(it) {
+  const st = statusOf(it), r = itemCalc(it), t = today();
+  const pc = it.kind === 'pc';
+  const soldParts = pc ? it.parts.filter((p) => p.sold) : [];
+  const soFar = pc ? sum(soldParts, (p) => partShare(it, p).profit) : 0;
+  const pv = (x) => ({ v: whole(x, true), c: x < 0 ? 'var(--neg)' : 'var(--pos)' });
+  let a, b, c;
+  if (st === 'viewing' || st === 'passed') { a = ['Asking', whole(n(it.buy))]; b = [pc ? 'Parts value' : 'Sell at', whole(pc ? r.sale : n(it.sell))]; const p = pv(r.profit); c = ['Projected', p.v, p.c]; }
+  else if (st === 'sold') { a = ['Paid', whole(n(it.buy))]; b = ['Sold for', whole(r.rev)]; const p = pv(r.profit); c = ['Profit', p.v, p.c]; }
+  else if (pc) { a = ['Paid', whole(n(it.buy))]; b = ['Parts value', whole(r.sale)]; const p = pv(soldParts.length ? soFar : r.profit); c = [soldParts.length ? 'So far' : 'Projected', p.v, p.c]; }
+  else { a = ['Paid', whole(n(it.buy))]; b = [st === 'listed' ? 'Listed at' : 'Sell at', whole(n(it.sell))]; const p = pv(r.profit); c = ['Projected', p.v, p.c]; }
+  let foot = '', badge = null;
+  const held = it.dates.bought ? daysBetween(it.dates.bought, t) : 0;
+  if (st === 'viewing') { foot = 'Viewed ' + fmtD(it.dates.viewed); const [l, tn] = rating(r); badge = [l, 'tone-' + tn]; }
+  else if (st === 'passed') foot = 'Passed ' + fmtD(it.dates.passed || it.dates.viewed);
+  else if (st === 'sold') foot = it.dates.bought && it.dates.sold ? 'Sold in ' + daysBetween(it.dates.bought, it.dates.sold) + ' days' : 'Sold ' + fmtD(it.dates.sold);
+  else { foot = held + (held === 1 ? ' day held' : ' days held'); if (held > n(S.settings.warnDays)) badge = ['Over ' + S.settings.warnDays + ' days', 'tone-warn']; }
+  if (pc && st !== 'viewing' && st !== 'passed' && st !== 'sold' && !badge) badge = [soldParts.length + ' of ' + it.parts.length + ' sold', ''];
+  const lvl = { viewing: 1, bought: 2, listed: 3, sold: 4, passed: 0 }[st];
+  return { st, a, b, c, foot, badge, lvl, r };
+}
+function filteredItems() {
+  const { filter, cat, q } = S.ui, ql = q.trim().toLowerCase();
+  return S.items.filter((i) => (filter === 'all' || statusOf(i) === filter) && (cat === 'all' || i.category === cat) && (!ql || (i.name + ' ' + i.brand + ' ' + i.category).toLowerCase().indexOf(ql) >= 0))
+    .sort((x, y) => (lastDate(y) > lastDate(x) ? 1 : -1));
+}
+const lastDate = (i) => [i.dates.sold, i.dates.passed, i.dates.listed, i.dates.bought, i.dates.viewed].filter(Boolean).sort().pop() || '';
+function viewInventory() {
+  if (!S.items.length) return `<h1 class="h1">Inventory</h1>
+  <section class="card empty"><div class="ico" aria-hidden="true">${ic('inventory', 28)}</div><h2 style="margin:0;font-size:32px;line-height:38px;font-weight:600;letter-spacing:-.02em">Nothing to flip yet</h2>
+  <p style="margin:0;font-size:17px;line-height:1.5;color:var(--t2);max-width:560px">Price your first deal on Estimate and save it as Viewing. It lands here and moves along as you buy, list and sell it.</p>
+  <div style="display:flex;gap:8px;flex-wrap:wrap"><a class="btn btn-pri" href="#estimate">Price a deal</a><button class="btn btn-sec" data-act="loadExamples">Load example items</button></div></section>`;
+  const items = filteredItems();
+  const counts = (k) => S.items.filter((i) => k === 'all' || statusOf(i) === k).length;
+  const ex = S.items.filter((i) => i.example).length;
+  const cats = ['all'].concat(Array.from(new Set(S.items.map((i) => i.category))));
+  return `<header style="display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap"><h1 class="h1">Inventory</h1><a class="btn btn-pri" href="#estimate">${ic('plus', 18)}Add an item</a></header>
+  ${ex ? `<div class="banner"><span style="flex:1">${ex === S.items.length ? `These ${ex} items are examples, so you can see how everything fits.` : `${ex} example items are mixed in with yours.`}</span><button class="btn btn-plain btn-sm" style="color:var(--t1)" data-act="rmExamples">Remove examples</button></div>` : ''}
+  <div class="toolbar">
+    <div class="filters" role="group" aria-label="Filter by status">${['all', 'viewing', 'bought', 'listed', 'sold', 'passed'].map((k) => `<button class="chip" aria-pressed="${S.ui.filter === k}" data-act="filter" data-v="${k}">${k === 'all' ? 'All' : ST_LABEL[k]}<span class="ct">${counts(k)}</span></button>`).join('')}</div>
+    <div class="fld" style="width:168px"><select aria-label="Category" data-f="ui.cat">${cats.map((c) => `<option value="${esc(c)}"${S.ui.cat === c ? ' selected' : ''}>${c === 'all' ? 'All categories' : esc(c)}</option>`).join('')}</select>${ic('chev', 16, 'color:var(--t3);pointer-events:none')}</div>
+    <div class="fld" style="width:220px">${ic('search', 16, 'color:var(--t3)')}<input aria-label="Search items" placeholder="Search" data-f="ui.q" value="${esc(S.ui.q)}"></div>
+    ${seg('ui.view', S.ui.view, [['grid', 'Grid'], ['list', 'List']])}
+  </div>
+  <div id="invItems">${invItemsHTML(items)}</div>`;
+}
+function invItemsHTML(items) {
+  if (!items.length) return `<div class="card" style="padding:40px;display:flex;flex-direction:column;gap:8px"><span style="font-size:17px;font-weight:600">No items match</span><span style="font-size:15px;color:var(--t2)">Try another status or clear the search.</span></div>`;
+  if (S.ui.view === 'list') {
+    return `<div class="tbl"><div class="tr th" role="row"><span>Item</span><span>Status</span><span>Category</span><span>Days</span><span>Paid</span><span>Sell / sold for</span><span>Profit</span><span>Updated</span></div>
+    ${items.map((it) => { const c = cardData(it); return `<button class="tr" data-act="open" data-id="${it.id}"><span><b style="font-weight:600">${esc(it.name || 'Untitled')}</b> <span style="color:var(--t2)">${esc(it.brand)}</span></span><span><span class="pill st-${c.st}"><i></i>${ST_LABEL[c.st]}</span></span><span style="color:var(--t2)">${esc(it.category)}</span><span style="color:${c.badge && c.badge[1] === 'tone-warn' ? 'var(--warn)' : 'var(--t2)'}">${esc(c.foot)}</span><span>${c.a[1]}</span><span>${c.b[1]}</span><span style="font-weight:600;color:${c.st === 'sold' ? c.c[2] : 'var(--t2)'}">${c.c[1]}</span><span style="color:var(--t2)">${fmtD(lastDate(it))}</span></button>`; }).join('')}</div>`;
+  }
+  return `<div class="grid">${items.map((it) => { const c = cardData(it); return `<button class="inv" data-act="open" data-id="${it.id}" aria-label="${esc(it.name)}, ${ST_LABEL[c.st]}, ${c.c[0]} ${c.c[1]}">
+    <div style="display:flex;flex-direction:column;gap:4px;min-width:0;width:100%"><div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px"><span class="nm">${esc(it.name || 'Untitled')}</span><span class="pill st-${c.st}"><i></i>${ST_LABEL[c.st]}</span></div><span class="sb">${esc(it.kind === 'pc' ? 'PC · ' + it.parts.length + ' parts' : it.category + (it.brand ? ' · ' + it.brand : ''))}</span></div>
+    <div class="fig" style="width:100%"><span>${c.a[0]}<b>${c.a[1]}</b></span><span>${c.b[0]}<b>${c.b[1]}</b></span><span>${c.c[0]}<b style="color:${c.c[2]}">${c.c[1]}</b></span></div>
+    <div class="prog" aria-hidden="true" style="width:100%">${[0, 1, 2, 3].map((k) => `<i style="${k < c.lvl ? 'background:var(--st-' + c.st + ')' : ''}"></i>`).join('')}</div>
+    <div class="ft" style="width:100%"><span>${esc(c.foot)}</span>${c.badge ? `<span class="badge ${c.badge[1]}">${esc(c.badge[0])}</span>` : ''}</div></button>`; }).join('')}</div>`;
+}
+
+/* ================= Overlays ================= */
+function renderOverlay() {
+  const o = $('#overlay');
+  const key = S.ui.sheet ? 'sheet:' + S.ui.sheet : (S.ui.resultOpen && S.ui.screen === 'estimate' ? 'result' : '');
+  const same = key && o.dataset.k === key;
+  const body = o.querySelector('.sheet-body, #rsheet'), top = same && body ? body.scrollTop : 0;
+  o.dataset.k = key;
+  const finish = () => { if (!same) return; const s = o.querySelector('.sheet'); if (s) s.style.animation = 'none'; const sc = o.querySelector('.scrim'); if (sc) sc.style.animation = 'none'; const b = o.querySelector('.sheet-body, #rsheet'); if (b) b.scrollTop = top; };
+  if (S.ui.sheet) { const it = S.items.find((i) => i.id === S.ui.sheet); if (!it) { S.ui.sheet = null; o.innerHTML = ''; o.dataset.k = ''; return; } o.innerHTML = sheetHTML(it); finish(); return; }
+  if (S.ui.resultOpen && S.ui.screen === 'estimate') {
+    o.innerHTML = `<div class="ov"><div class="scrim" data-act="closeResult"></div><section class="sheet" role="dialog" aria-modal="true" aria-label="Full receipt">
+      <div class="grab" data-drag="close"><span></span></div>
+      <div class="sheet-top" data-drag="close"><span style="font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(S.est.mode === 'pc' ? S.est.pcName || 'PC part-out' : [S.est.item, S.est.brand].filter(Boolean).join(' · ') || 'Estimate')}</span><button class="btn btn-plain" style="color:var(--accent-text);font-weight:600" data-act="closeResult">Done</button></div>
+      <div style="flex:1;overflow-y:auto" id="rsheet">${resultHTML()}</div></section></div>`;
+    finish();
+    return;
+  }
+  o.innerHTML = '';
+}
+function sheetHTML(it) {
+  const c = cardData(it), r = c.r, pc = it.kind === 'pc', st = c.st, t = today();
+  const last = STATUSES.reduce((a, k, i) => (it.dates[DK[k]] && !(pc && k === 'sold' && st !== 'sold') ? i : a), -1);
+  const color = 'var(--st-' + (st === 'passed' ? 'passed' : STATUSES[Math.max(last, 0)]) + ')';
+  const steps = STATUSES.map((k, i) => {
+    const dk = DK[k];
+    const done = !!it.dates[dk] && !(pc && k === 'sold' && st !== 'sold');
+    const cur = i === last && st !== 'passed';
+    const sub = done ? fmtD(it.dates[dk]) : (pc && k === 'sold' ? 'When all ' + it.parts.length + ' sell' : i === last + 1 ? 'Tap to stamp' : '—');
+    return `<li><button class="step" data-act="stamp" data-v="${k}" aria-label="${ST_LABEL[k]}${done ? ', ' + fmtD(it.dates[dk]) : ', stamp today'}"><i style="${done ? `background:${color};box-shadow:${cur ? '0 0 0 6px color-mix(in srgb,' + color + ' 22%,transparent)' : 'none'}` : ''}">${done ? ic('check', 18, 'stroke-width:2') : ''}</i><b style="color:${done ? 'var(--t1)' : 'var(--t2)'}">${ST_LABEL[k]}</b><small style="color:${!done && i === last + 1 && !(pc && k === 'sold') ? 'var(--accent-text)' : 'var(--t3)'}">${sub}</small></button></li>`;
+  }).join('');
+  const pct = last <= 0 ? 0 : last / 3 * 75;
+  const [rl, tone] = rating(r);
+  const soldParts = pc ? it.parts.filter((p) => p.sold) : [];
+  const checks = pc ? CHECKS_PC : CHECKS_SINGLE;
+  const doneN = checks.filter((_, i) => it.checks[i]).length;
+  const noTolls = n(it.tollEach) === 0;
+  const rt = itemCalc(it, false), ra = itemCalc(it, true);
+  const ropt = (sel, title, res, sub, better, v) => `<button type="button" class="opt" aria-pressed="${sel}" data-act="set" data-f="item.tolls" data-v="${v}"><span class="top">${title}<span class="radio"></span></span><span class="v">${money(res.profit)}</span><span class="s">${sub}</span><span class="b" style="visibility:${better ? 'visible' : 'hidden'}">Better</span></button>`;
+  const rw = pc ? calc(it, 'whole', it.tolls === 'avoid', n(it.buy)) : null;
+  return `<div class="ov"><div class="scrim" data-act="closeSheet"></div>
+  <section class="sheet" role="dialog" aria-modal="true" aria-labelledby="sh-title">
+    <div class="grab" data-drag="closeSheet"><span></span></div>
+    <div class="sheet-top"><span class="pill st-${st}"><i></i>${ST_LABEL[st]}</span><button class="btn btn-plain" style="color:var(--accent-text);font-weight:600" data-act="closeSheet">Done</button></div>
+    <div class="sheet-body">
+      <div style="display:flex;flex-direction:column;gap:4px"><h2 id="sh-title" style="margin:0;font-size:32px;line-height:38px;font-weight:600;letter-spacing:-.02em;overflow-wrap:anywhere">${esc(it.name || 'Untitled')}</h2><span style="font-size:15px;color:var(--t2)">${esc(pc ? 'PC · ' + it.parts.length + ' parts' : [it.category, it.brand].filter(Boolean).join(' · '))}</span></div>
+      <div class="stepper"><div class="ln" aria-hidden="true"></div><div class="fill" aria-hidden="true" style="width:${pct}%;background:${color}"></div><ol aria-label="Lifecycle. Tap a step to stamp today">${steps}</ol></div>
+      ${pc ? `<section class="grp"><h3>Parts</h3><div class="list">
+        <div style="padding:16px 16px 12px;display:flex;flex-direction:column;gap:12px"><div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px"><span style="font-size:17px;font-weight:600" id="sh-psum">${soldParts.length} of ${it.parts.length} sold · ${whole(sum(soldParts, (p) => n(p.sell)))} of ${whole(r.sale)}</span><span style="font-size:15px;font-weight:600;color:var(--pos)" id="sh-sofar">${money(sum(soldParts, (p) => partShare(it, p).profit), true)} so far</span></div>
+        <div aria-hidden="true" style="display:grid;grid-template-columns:repeat(${Math.max(it.parts.length, 1)},minmax(0,1fr));gap:2px">${it.parts.map((p) => `<i style="display:block;height:4px;border-radius:2px;background:${p.sold ? 'var(--pos)' : 'var(--s3)'}"></i>`).join('')}</div></div>
+        ${it.parts.map((p, i) => partRow('item', p, i, it)).join('')}
+        <button class="row add-row" data-act="addPart" data-t="item">${ic('plus', 18)}Add a part</button>
+      </div><p>Tap a part's icon to mark it sold today. Each part counts in the month it sells, carrying its share of the ${whole(n(it.buy))} by sell price.</p></section>` : ''}
+      <section class="grp"><h3>Profit</h3><div class="list" id="sh-profit">${sheetProfitHTML(it)}</div></section>
+      ${pc ? `<section class="grp"><h3>Part out or sell whole</h3><div class="cg-g">
+        ${ropt(true, 'Part out', r, `${r.count} sales · ${money(r.fees + r.ship)} fees and shipping`, r.profit > rw.profit + 0.004, it.tolls).replace('data-act="set" data-f="item.tolls" data-v="' + it.tolls + '"', 'disabled')}
+        ${ropt(false, 'Sell whole', rw, `1 sale · ${money(rw.fees + rw.ship)} fees`, rw.profit > r.profit + 0.004, it.tolls).replace('data-act="set" data-f="item.tolls" data-v="' + it.tolls + '"', 'disabled')}
+      </div><div class="list">${row('Sell whole for', 'item.wholeSell', it.wholeSell, { pre: '$', w: 100 })}</div></section>` : ''}
+      <section class="grp"><h3>Item</h3><div class="list">
+        ${pc ? textRow('Name', 'item.name', it.name) : selRow('Category', 'item.category', it.category, catList().indexOf(it.category) < 0 ? [it.category].concat(catList()) : catList()) + textRow('Item', 'item.name', it.name) + textRow('Brand / model', 'item.brand', it.brand)}
+        ${textRow('Found on', 'item.where', it.where, 'Facebook Marketplace')}
+        ${pc ? '' : row('Serial', 'item.serial', it.serial, { mode: 'text', ph: 'Optional', mono: true })}
+      </div></section>
+      <section class="grp"><h3>Dates</h3><div class="list">
+        ${[['viewed', 'Viewed'], ['bought', 'Bought'], ['listed', 'Listed'], ['sold', 'Sold']].filter(([k]) => !(pc && k === 'sold')).map(([k, l]) => row(l, 'item.dates.' + k, it.dates[k] || '', { type: 'date', mode: 'none', ph: '' })).join('')}
+      </div></section>
+      <section class="grp"><h3>Money</h3><div class="list">
+        ${row(pc ? 'Paid for the whole PC' : st === 'viewing' || st === 'passed' ? 'Asking' : 'Paid', 'item.buy', it.buy, { pre: '$', w: 96 })}
+        ${pc ? '' : row(st === 'sold' ? 'Sold for' : 'Target sell price', 'item.sell', it.sell, { pre: '$', w: 96 })}
+        ${segRow('Paid with', 'item.pay', it.pay, [['paypal', 'PayPal'], ['ebay', 'eBay'], ['cash', 'Cash']], 220)}
+        ${pc ? '' : row('Shipping cost', 'item.shipping', it.shipping, { pre: '$', w: 96 })}
+        ${pc ? '' : row('Buyer paid shipping', 'item.buyerShip', it.buyerShip, { pre: '$', w: 96 })}
+        ${row('Extras', 'item.extras', it.extras, { pre: '$', w: 96 })}
+      </div></section>
+      <section class="grp"><h3>Drive and tolls</h3><div class="list">
+        ${row('Seller ZIP', 'item.sellerZip', it.sellerZip, { mode: 'numeric', max: 5, ph: 'Optional', mono: true })}
+        ${row('Miles, one way', 'item.miles', it.miles, { suf: 'mi', w: 80 })}
+        ${row('Drive time, one way', 'item.hours', it.hours, { suf: 'hrs', w: 80 })}
+        ${swRow('Round trip', 'item.roundTrip', it.roundTrip)}
+        ${row('Tolls each way', 'item.tollEach', it.tollEach, { pre: '$', w: 80 })}
+        ${noTolls ? '' : row('No-toll route adds', 'item.avoidMi', it.avoidMi, { suf: 'mi', w: 64 })}
+      </div>${noTolls ? `<p>No toll roads on this route, so there's nothing to compare. ${Math.round(r.mi)} mi, ${money(r.gas)} gas.</p>` : `<div class="cg-g" style="margin-top:8px">${ropt(it.tolls === 'take', 'Take toll roads', rt, `${rt.hrs.toFixed(1)} hrs · ${money(rt.tolls)} tolls`, rt.profit > ra.profit + 0.004, 'take')}${ropt(it.tolls === 'avoid', 'Avoid tolls', ra, `${ra.hrs.toFixed(1)} hrs · +${Math.round(n(it.avoidMi) * ra.trips)} mi`, ra.profit > rt.profit + 0.004, 'avoid')}</div>`}</section>
+      <section class="grp"><h3>Testing · ${doneN} of ${checks.length} done</h3><div class="list">
+        ${checks.map((l, i) => `<button class="row chk" role="checkbox" aria-checked="${!!it.checks[i]}" data-act="check" data-i="${i}"><i>${ic('check', 14, 'stroke-width:2.25')}</i><span style="flex:1;font-size:15px">${l}</span></button>`).join('')}
+      </div></section>
+      <section class="grp"><h3><label for="sh-notes">Notes</label></h3><div class="list"><textarea id="sh-notes" class="note" data-f="item.notes" rows="4" placeholder="Condition, temps, anything worth remembering">${esc(it.notes)}</textarea></div></section>
+    </div>
+    <div class="sheet-foot">${S.ui.confirm ? `<span role="alert" style="flex:1;min-width:0;font-size:15px;font-weight:500;color:var(--neg)">Delete ${esc(it.name || 'this item')}${pc ? ' and its parts' : ''} for good?</span><button class="btn btn-plain" data-act="keep">Keep</button><button class="btn btn-solid-del" data-act="delete">Delete</button>`
+      : `<button class="btn btn-pri" data-act="closeSheet" data-v="save">Save</button>${st !== 'passed' && st !== 'sold' ? '<button class="btn btn-sec" data-act="pass">Mark passed</button>' : ''}<span style="flex:1"></span><button class="btn btn-del" data-act="askDelete">Delete</button>`}</div>
+  </section></div>`;
+}
+function sheetProfitHTML(it) {
+  const r = itemCalc(it), [rl, tone] = rating(r), st = statusOf(it), c = Math.round(Math.abs(r.profit) * 100);
+  return `<div class="row" style="min-height:64px"><span class="lb">${st === 'sold' ? 'Profit' : 'Projected'}</span><div class="val"><span style="font-size:28px;font-weight:600;letter-spacing:-.03em;color:${r.profit < 0 ? 'var(--neg)' : 'var(--pos)'}">${r.profit < 0 ? MINUS : '+'}$${Math.floor(c / 100).toLocaleString('en-US')}<span style="font-size:17px;font-weight:300;color:var(--t2)">.${pad(c % 100)}</span></span></div></div>
+  <div class="row"><span class="lb">Rating</span><div class="val"><span class="tag tone-${tone}">${rl}</span></div></div>
+  <div class="row"><span class="lb">ROI</span><div class="val">${Math.round(r.roi * 100)}%</div></div>
+  <div class="row"><span class="lb">Per hour driving</span><div class="val">${whole(r.perHr)}</div></div>
+  <div class="row"><span class="lb">Where it goes</span><div class="val" style="font-size:13px;color:var(--t3);text-align:right">${money(r.fees)} fees · ${money(r.ship)} ship · ${money(r.gas + r.tolls)} drive${r.extras ? ' · ' + money(r.extras) + ' extras' : ''}</div></div>`;
+}
+function refreshSheet() {
+  const it = S.items.find((i) => i.id === S.ui.sheet); if (!it) return;
+  const p = $('#sh-profit'); if (p) p.innerHTML = sheetProfitHTML(it);
+  if (it.kind === 'pc') {
+    const sold = it.parts.filter((q) => q.sold);
+    const ps = $('#sh-psum'); if (ps) ps.textContent = `${sold.length} of ${it.parts.length} sold · ${whole(sum(sold, (q) => n(q.sell)))} of ${whole(sum(it.parts, (q) => n(q.sell)))}`;
+    const sf = $('#sh-sofar'); if (sf) sf.textContent = money(sum(sold, (q) => partShare(it, q).profit), true) + ' so far';
+    it.parts.forEach((q, i) => { const el = document.querySelector(`[data-pp="${i}"]`); if (el && q.sold) el.textContent = money(partShare(it, q).profit, true); });
+  }
+}
+
+/* ================= Route ================= */
+function routeData() {
+  const r = S.route, s = S.settings, a = S.zip[s.homeZip], b = S.zip[r.to];
+  if (!a || !b) return { a, b, ok: false };
+  const mi = Math.round(roadMiles(a, b)), hrs = mi / 57;
+  const trips = s.roundTrip ? 2 : 1, mpg = n(s.mpg) || 25, gp = n(s.gas);
+  const gas = (m) => m * trips / mpg * gp;
+  const toll = n(r.tollEach), xmi = n(r.avoidMi), xmin = n(r.avoidMin);
+  const take = { cost: gas(mi) + toll * trips, mi, hrs };
+  const avo = { cost: gas(mi + xmi), mi: mi + xmi, hrs: hrs + xmin / 60 };
+  const noTolls = toll === 0;
+  const avoid = noTolls ? false : r.avoid;
+  return { a, b, ok: true, take, avo, noTolls, avoid, sel: avoid ? avo : take, trips, gas, toll, xmi };
+}
+function viewRoute() {
+  const r = S.route, s = S.settings;
+  const recents = Array.from(new Set(S.items.map((i) => i.sellerZip).filter((z) => /^\d{5}$/.test(z) && S.zip[z]))).slice(0, 4);
+  return `<h1 class="h1">Route</h1>
+  <div class="route-top">
+    <section class="grp" style="flex:1 1 420px;min-width:0"><h2>Trip</h2><div class="list">
+      <div class="row"><label for="f-set-homeZip">From</label><div class="val"><span aria-hidden="true" style="width:8px;height:8px;border-radius:4px;background:var(--route);margin-right:8px"></span><input id="f-set-homeZip" data-f="set.homeZip" inputmode="numeric" maxlength="5" value="${esc(s.homeZip)}" placeholder="Home ZIP" style="flex:0 1 88px;font-family:'Geist Mono',ui-monospace,monospace;font-size:14px"><span class="u" style="font-size:13px;margin-left:4px" id="rCity1"></span></div></div>
+      <div class="row"><label for="f-route-to">To</label><div class="val"><span aria-hidden="true" style="width:8px;height:8px;border-radius:4px;background:var(--st-viewing);margin-right:8px"></span><input id="f-route-to" data-f="route.to" inputmode="numeric" maxlength="5" value="${esc(r.to)}" placeholder="Seller ZIP" style="flex:0 1 88px;font-family:'Geist Mono',ui-monospace,monospace;font-size:14px"><span class="u" style="font-size:13px;margin-left:4px" id="rCity2"></span></div></div>
+      ${recents.length ? `<div class="row chips" role="group" aria-label="Recent sellers">${recents.map((z) => `<button class="chip" aria-pressed="${z === r.to}" data-act="routeTo" data-v="${z}">${esc(S.zip[z].city)}<span class="ct mono" style="font-size:12px">${z}</span></button>`).join('')}</div>` : ''}
+      ${row('Tolls each way', 'route.tollEach', r.tollEach, { pre: '$', w: 72 })}
+      ${row('No-toll route adds', 'route.avoidMi', r.avoidMi, { suf: 'mi', w: 48 })}
+      ${row('and', 'route.avoidMin', r.avoidMin, { suf: 'min', w: 48 })}
+    </div><p>Each way. Miles are straight-line distance plus 18%, a close stand-in for road miles. Costs use ${esc(s.mpg)} mpg and $${n(s.gas).toFixed(2)} a gallon from Settings.</p></section>
+    <section class="grp" style="flex:0 1 400px;min-width:min(320px,100%)"><h2>Drive cost${s.roundTrip ? ', round trip' : ''}</h2><div id="rCards" style="display:flex;flex-direction:column;gap:8px"></div>
+      <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:8px"><a class="btn btn-sec" style="background:var(--s1);box-shadow:var(--card-shadow)" id="gFast" target="_blank" rel="noopener">Fastest route${ic('out', 16)}</a><a class="btn btn-sec" style="background:var(--s1);box-shadow:var(--card-shadow)" id="gAvoid" target="_blank" rel="noopener">Avoid tolls${ic('out', 16)}</a></div>
+      <button class="btn btn-pri" data-act="useRoute">Use in estimate</button></section>
+  </div>
+  <section class="mapcard" aria-label="Map">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;padding:16px 16px 0 24px"><span style="font-size:13px;font-weight:500;color:var(--t2)" id="mapTitle"></span>${seg('route.zoom', r.zoom, [['us', 'Lower 48'], ['region', 'Region']])}</div>
+    <div class="mapwrap" id="mapwrap" role="img" aria-label="Map of the drive"><canvas id="map"></canvas><svg viewBox="0 0 960 600" preserveAspectRatio="none" aria-hidden="true" id="arcSvg"></svg><div id="pins"></div></div>
+    <div class="stats" id="rStats"></div>
+  </section>`;
+}
+function refreshRoute() {
+  const d = routeData(), r = S.route, s = S.settings;
+  const c1 = $('#rCity1'), c2 = $('#rCity2');
+  if (c1) c1.textContent = d.a ? d.a.city : (/^\d{5}$/.test(s.homeZip) ? 'Looking up…' : 'Home');
+  if (c2) c2.textContent = d.b ? d.b.city : (/^\d{5}$/.test(r.to) ? 'Looking up…' : '');
+  const cards = $('#rCards');
+  if (cards) cards.innerHTML = d.ok ? [['take', 'With tolls', d.take, `${d.take.hrs.toFixed(1)} hrs each way · ${money(d.toll * d.trips)} in tolls`, !d.noTolls && d.take.cost < d.avo.cost, !d.avoid],
+    ['avoid', 'Avoid tolls', d.avo, d.noTolls ? 'No tolls entered for this route' : `${d.avo.hrs.toFixed(1)} hrs each way · +${Math.round(d.xmi * d.trips)} mi`, !d.noTolls && d.avo.cost < d.take.cost, d.avoid]]
+    .map(([k, t, o, sub, cheap, sel]) => `<button class="ropt" aria-pressed="${sel}" data-act="set" data-f="route.avoid" data-v="${k === 'avoid'}"><span class="radio"></span><span class="tx"><span class="t">${t}${cheap ? '<span class="cheap">Cheaper</span>' : ''}</span><span class="s">${sub}</span></span><span class="v">${k === 'avoid' && d.noTolls ? 'Same' : money(o.cost)}</span></button>`).join('')
+    : `<div class="card" style="padding:20px;font-size:15px;color:var(--t2)">${!/^\d{5}$/.test(s.homeZip) ? 'Add your home ZIP to measure drives.' : 'Enter a seller ZIP to see what the drive costs.'}</div>`;
+  const g = 'https://www.google.com/maps/dir/?api=1&origin=' + encodeURIComponent(s.homeZip) + '&destination=' + encodeURIComponent(r.to) + '&travelmode=driving';
+  const gf = $('#gFast'), ga = $('#gAvoid'); if (gf) gf.href = g; if (ga) ga.href = 'https://www.google.com/maps/dir/' + encodeURIComponent(s.homeZip) + '/' + encodeURIComponent(r.to) + '/data=!4m3!4m2!2m1!2b1';
+  const st = $('#rStats');
+  if (st) { const sel = d.ok ? d.sel : null;
+    st.innerHTML = `<div class="stat"><small>Road miles</small><b>${sel ? sel.mi : '–'}</b><span>one way</span></div><div class="stat"><small>Drive, one way</small><b>${sel ? sel.hrs.toFixed(1) + ' hrs' : '–'}</b><span>${sel ? Math.floor(sel.hrs) + ' hr ' + Math.round((sel.hrs % 1) * 60) + ' min' : ''}</span></div><div class="stat"><small>Gas${s.roundTrip ? ', round trip' : ''}</small><b>${sel ? money(d.gas(sel.mi)) : '–'}</b><span>${sel ? (d.avoid ? 'avoiding tolls' : money(d.toll * d.trips) + ' tolls on top') : ''}</span></div><div class="stat"><small>Ship estimate</small><b>${sel ? '$' + tierFor(sel.mi) : '–'}</b><span>by distance tier</span></div>`; }
+  const mt = $('#mapTitle'); if (mt) mt.textContent = r.zoom === 'us' ? 'Lower 48 · brighter where more people live' : 'Region';
+  drawMap();
+}
+const US = [[-124.7,48.4],[-123.3,49],[-95.2,49],[-94.6,48.7],[-93,48.6],[-91.4,48.1],[-90,47.8],[-91.5,47.1],[-92.1,46.7],[-90.4,46.6],[-88.4,47.4],[-87.4,46.5],[-85,46.8],[-84.4,46.4],[-84.7,45.9],[-83.4,45],[-83.3,44.3],[-82.5,43.9],[-82.4,43],[-83.1,42.3],[-83.4,41.7],[-82.5,41.4],[-81.7,41.5],[-80.5,42],[-79.8,42.3],[-79,42.8],[-78,43.4],[-76.2,43.5],[-76.3,44.2],[-75,45],[-71.5,45],[-70.8,45.4],[-70,46.7],[-69.2,47.45],[-68.2,47.35],[-67.8,47.1],[-67.8,45.7],[-67,44.8],[-68.8,44.3],[-70.2,43.7],[-70.8,42.9],[-70.6,42.6],[-71,42.3],[-70,41.8],[-70.5,41.5],[-71.4,41.4],[-72.9,41.2],[-74,40.7],[-74,40.4],[-74.1,39.8],[-74.9,38.9],[-75.1,38.3],[-75.6,37.6],[-76,37.1],[-76.3,36.9],[-75.8,36],[-75.5,35.3],[-76.5,34.7],[-77.9,33.9],[-79.2,33.2],[-80,32.6],[-81.1,32],[-81.4,31],[-81.3,30],[-80.6,28.5],[-80,26.8],[-80.1,25.8],[-80.4,25.2],[-81.1,25.1],[-81.8,26.1],[-82.6,27.5],[-82.7,28.4],[-83.1,29.1],[-84,30],[-85.4,29.7],[-86.5,30.4],[-88,30.4],[-89.4,30.2],[-89.4,29.2],[-90.2,29.1],[-91.3,29.3],[-92.3,29.6],[-93.8,29.7],[-94.8,29.3],[-96.6,28.3],[-97.4,27.4],[-97.2,25.95],[-99.1,26.4],[-99.5,27.5],[-100.3,28.3],[-101.4,29.8],[-102.4,29.8],[-103.1,29],[-104,29.4],[-104.7,30.2],[-106.5,31.8],[-108.2,31.8],[-108.2,31.33],[-111.1,31.33],[-114.8,32.5],[-114.7,32.7],[-117.1,32.5],[-117.3,33.2],[-118.4,33.8],[-119.2,34.2],[-120.6,34.6],[-120.9,35.4],[-121.9,36.6],[-122.4,37.2],[-122.5,37.8],[-123,38],[-123.8,39.4],[-124.4,40.4],[-124.1,41.7],[-124.5,42.8],[-124,44.6],[-123.9,46.2],[-124.1,47]];
+const LAKE = [[-87.5,41.7],[-86.5,42.2],[-86.2,43.2],[-86.5,44.2],[-85.6,45.2],[-85,45.8],[-86.4,45.9],[-87,45.4],[-87.6,44.8],[-87.9,43.5],[-87.8,42.4]];
+const CITIES = [[-74,40.7,1],[-118.2,34.05,.9],[-87.6,41.9,.8],[-95.4,29.8,.6],[-96.8,32.8,.6],[-112.1,33.4,.45],[-75.2,39.95,.55],[-122.4,37.8,.6],[-122.3,47.6,.45],[-84.4,33.75,.55],[-80.2,25.8,.55],[-77,38.9,.55],[-71.06,42.36,.5],[-105,39.7,.4],[-83,42.3,.45],[-93.3,44.98,.4],[-90.2,38.6,.35],[-80.8,35.2,.35],[-86.2,39.8,.3],[-83,40,.3],[-86.8,36.2,.3],[-94.6,39.1,.3],[-111.9,40.76,.3],[-122.7,45.5,.35],[-115.1,36.2,.3],[-117.2,32.7,.4],[-82.5,27.95,.4],[-81.4,28.5,.35],[-90.1,30,.25],[-80,40.44,.3],[-81.7,41.5,.3],[-84.5,39.1,.3],[-98.5,29.4,.4],[-97.7,30.3,.35],[-78.6,35.8,.3],[-90,35.1,.25],[-85.8,38.25,.25],[-97.5,35.5,.25],[-106.6,35.1,.2],[-121.5,38.6,.3],[-87.9,43,.3],[-78.9,42.9,.2],[-86.8,33.5,.2],[-81.7,30.3,.25],[-96,41.25,.2],[-116.2,43.6,.15],[-117.4,47.7,.12],[-77.4,37.5,.25]];
+const MW = 960, MH = 600, RAD = Math.PI / 180, AP1 = 29.5 * RAD, AP2 = 45.5 * RAD, AN = (Math.sin(AP1) + Math.sin(AP2)) / 2, AC = Math.cos(AP1) ** 2 + 2 * AN * Math.sin(AP1), ARHO0 = Math.sqrt(AC - 2 * AN * Math.sin(23 * RAD)) / AN;
+const alb = (lon, lat) => { const rho = Math.sqrt(AC - 2 * AN * Math.sin(lat * RAD)) / AN, th = AN * (lon + 96) * RAD; return [rho * Math.sin(th), -(ARHO0 - rho * Math.cos(th))]; };
+const inPoly = (x, y, poly) => { let c = false; for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) { const a = poly[i], b = poly[j]; if ((a[1] > y) !== (b[1] > y) && x < (b[0] - a[0]) * (y - a[1]) / (b[1] - a[1]) + a[0]) c = !c; } return c; };
+const mapCache = {};
+function buildMap(fit) {
+  const key = fit.map((p) => p.join(',')).join(';');
+  if (mapCache[key]) return mapCache[key];
+  const pts = fit.map((p) => alb(p[0], p[1]));
+  const xs = pts.map((p) => p[0]), ys = pts.map((p) => p[1]);
+  const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
+  const pd = 8, k = Math.min((MW - 2 * pd) / (x1 - x0), (MH - 2 * pd) / (y1 - y0));
+  const ox = (MW - (x1 - x0) * k) / 2, oy = (MH - (y1 - y0) * k) / 2;
+  const proj = (lon, lat) => { const p = alb(lon, lat); return [ox + (p[0] - x0) * k, oy + (p[1] - y0) * k]; };
+  const us = US.map((p) => proj(p[0], p[1])), lake = LAKE.map((p) => proj(p[0], p[1]));
+  const cities = CITIES.map((c) => { const p = proj(c[0], c[1]); return [p[0], p[1], c[2]]; });
+  const step = 9, sig = 20 * Math.sqrt(k / 400) * (step / 12), dots = [];
+  for (let j = 0, y = step / 2; y < MH; y += step, j++) for (let i = 0, x = step / 2; x < MW; x += step, i++) {
+    if (!inPoly(x, y, us) || inPoly(x, y, lake)) continue;
+    let d = 0; for (const c of cities) { const dx = x - c[0], dy = y - c[1]; d += c[2] * Math.exp(-(dx * dx + dy * dy) / (2 * sig * sig)); }
+    const v = Math.min(1, d * 1.1 + 0.03 + 0.08 * Math.max(0, Math.min(1, (x / MW - 0.3) / 0.45)) + ((i * 9301 + j * 49297) % 233280) / 233280 * 0.05);
+    dots.push([x, y, 0.8 + v * 0.8, 0.1 + v * 0.7]);
+  }
+  return (mapCache[key] = { dots, proj });
+}
+function drawMap() {
+  const wrap = $('#mapwrap'), cv = $('#map'); if (!wrap || !cv) return;
+  const d = routeData(), r = S.route;
+  let fit = US;
+  if (r.zoom === 'region' && d.a && d.b) {
+    const lo = [Math.min(d.a.lng, d.b.lng) - 3, Math.max(d.a.lng, d.b.lng) + 3], la = [Math.min(d.a.lat, d.b.lat) - 2, Math.max(d.a.lat, d.b.lat) + 2];
+    fit = [[lo[0], la[0]], [lo[1], la[0]], [lo[0], la[1]], [lo[1], la[1]]].map((p) => [Math.round(p[0] * 2) / 2, Math.round(p[1] * 2) / 2]);
+  }
+  const m = buildMap(fit);
+  const w = wrap.clientWidth, h = wrap.clientHeight, dpr = window.devicePixelRatio || 1;
+  cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr);
+  const ctx = cv.getContext('2d'); ctx.setTransform(dpr * w / MW, 0, 0, dpr * h / MH, 0, 0); ctx.clearRect(0, 0, MW, MH);
+  ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--dot').trim() || '#999';
+  for (const [x, y, s, o] of m.dots) { ctx.globalAlpha = o; ctx.beginPath(); ctx.arc(x, y, s * MW / w * 1.0, 0, Math.PI * 2); ctx.fill(); }
+  ctx.globalAlpha = 1;
+  const svg = $('#arcSvg'), pins = $('#pins');
+  if (!d.a || !d.b) { svg.innerHTML = ''; pins.innerHTML = d.a ? pinHTML(m.proj(d.a.lng, d.a.lat), 'You', '--route') : ''; return; }
+  const A = m.proj(d.a.lng, d.a.lat), B = m.proj(d.b.lng, d.b.lat);
+  const mx = (A[0] + B[0]) / 2, my = (A[1] + B[1]) / 2, dx = B[0] - A[0], dy = B[1] - A[1], len = Math.hypot(dx, dy) || 1, bend = len * 0.25;
+  const cx = mx - (dy / len) * bend * (dx > 0 ? 1 : -1), cy = my - Math.abs(dx / len) * bend - 4;
+  const dPath = `M${A[0].toFixed(1)} ${A[1].toFixed(1)} Q${cx.toFixed(1)} ${cy.toFixed(1)} ${B[0].toFixed(1)} ${B[1].toFixed(1)}`;
+  const key = dPath + r.zoom;
+  if (svg.dataset.k !== key) {
+    svg.dataset.k = key;
+    svg.innerHTML = `<path class="arc" d="${dPath}" pathLength="1" fill="none" stroke="var(--route)" stroke-width="10" stroke-linecap="round" opacity=".16" vector-effect="non-scaling-stroke"/><path class="arc" d="${dPath}" pathLength="1" fill="none" stroke="var(--route)" stroke-width="2.5" stroke-linecap="round" vector-effect="non-scaling-stroke"/>`;
+  }
+  pins.innerHTML = pinHTML(A, 'You', '--route') + pinHTML(B, d.b.city, '--st-viewing', '.9s');
+  wrap.setAttribute('aria-label', `Map: ${d.a.city} to ${d.b.city}, ${d.sel.mi} road miles`);
+}
+function pinHTML(p, label, v, delay) { return `<div class="pin" style="left:${(p[0] / MW * 100).toFixed(2)}%;top:${(p[1] / MH * 100).toFixed(2)}%;color:var(${v})"><span class="halo" style="background:radial-gradient(circle,color-mix(in srgb,var(${v}) 34%,transparent) 0%,transparent 70%)"></span><span class="pulse" style="background:var(${v});${delay ? 'animation-delay:' + delay : ''}"></span><span class="core" style="background:var(${v})"></span><span class="lb">${esc(label)}</span></div>`; }
+
+/* ================= Monthly ================= */
+function monthStats(key) {
+  const t = today(), out = { revenue: 0, profit: 0, sales: 0, bought: 0, spent: 0, days: [], where: [0, 0, 0, 0, 0, 0, 0], rows: [] };
+  S.items.forEach((it) => {
+    const r = itemCalc(it), dts = it.dates;
+    if (dts.bought && monthKey(dts.bought) === key) { out.bought++; out.spent += n(it.buy) + r.gas + r.tolls + r.extras; }
+    let mRev = 0, mProfit = 0, mCost = 0, touched = Object.values(dts).some((v) => v && monthKey(v) === key);
+    if (it.kind === 'pc') {
+      it.parts.filter((p) => p.sold && monthKey(p.sold) === key).forEach((p) => {
+        const sh = partShare(it, p); touched = true;
+        out.sales++; out.revenue += n(p.sell); out.profit += sh.profit; mRev += n(p.sell); mProfit += sh.profit; mCost += sh.cost - sh.purchase;
+        const w = out.where; w[0] += sh.purchase; w[1] += sh.fees; w[2] += sh.ship; w[3] += sh.gas; w[4] += sh.tolls; w[5] += sh.extras;
+        if (dts.bought) out.days.push(daysBetween(dts.bought, p.sold));
+      });
+    } else if (it.status === 'sold' && dts.sold && monthKey(dts.sold) === key) {
+      out.sales++; out.revenue += r.rev; out.profit += r.profit; mRev = r.rev; mProfit = r.profit; mCost = r.rev - r.buy - r.profit;
+      const w = out.where; w[0] += r.buy; w[1] += r.fees; w[2] += r.ship; w[3] += r.gas; w[4] += r.tolls; w[5] += r.extras;
+      if (dts.bought) out.days.push(daysBetween(dts.bought, dts.sold));
+    }
+    if (touched) {
+      const st = statusOf(it), soldN = it.kind === 'pc' ? it.parts.filter((p) => p.sold).length : 0;
+      const pSold = it.kind === 'pc' ? it.parts.filter((p) => p.sold && monthKey(p.sold) === key).map((p) => p.sold).sort() : [];
+      out.rows.push({ id: it.id, name: it.name, brand: it.kind === 'pc' ? '' : it.brand, note: it.kind === 'pc' ? soldN + ' of ' + it.parts.length + ' sold' : '', st,
+        viewed: fmtD(dts.viewed) || '–', bought: fmtD(dts.bought) || '–', sold: it.kind === 'pc' ? (pSold.length ? fmtD(pSold[0]) + (pSold.length > 1 ? '–' + fmtD(pSold[pSold.length - 1]).replace(/^\w+ /, '') : '') : '–') : (fmtD(dts.sold) || '–'),
+        days: dts.bought ? String(daysBetween(dts.bought, dts.sold || t)) : '–', paid: whole(n(it.buy)), soldFor: mRev ? whole(mRev) : '–', costs: mRev ? money(mCost) : '–', profit: mRev ? money(mProfit, true) : '', pc: mProfit < 0 ? 'var(--neg)' : 'var(--pos)', sortKey: lastDate(it) });
+    }
+  });
+  out.where[6] = Math.max(out.profit, 0);
+  out.rows.sort((a, b) => (b.sortKey > a.sortKey ? 1 : -1));
+  out.moneyIn = out.where[0] + out.where[3] + out.where[4] + out.where[5];
+  return out;
+}
+function tiedUp() {
+  let v = 0, c = 0;
+  S.items.forEach((it) => {
+    if (!it.dates.bought || it.status === 'passed') return;
+    if (it.kind === 'pc') { const un = it.parts.filter((p) => !p.sold); if (!un.length) return; v += sum(un, (p) => partShare(it, p).purchase); c++; }
+    else if (it.status !== 'sold') { v += n(it.buy); c++; }
+  });
+  return { v, c };
+}
+function viewMonthly() {
+  const cur = monthKey(today());
+  const months = Array.from({ length: 12 }, (_, i) => shiftMonth(cur, i - 11));
+  const sel = S.ui.month && months.indexOf(S.ui.month) >= 0 ? S.ui.month : cur;
+  const stats = Object.fromEntries(months.map((k) => [k, monthStats(k)]));
+  const m = stats[sel], prevKey = shiftMonth(sel, -1), prev = stats[prevKey] || monthStats(prevKey);
+  const allTime = sum(S.items, (it) => it.kind === 'pc' ? sum(it.parts.filter((p) => p.sold), (p) => partShare(it, p).profit) : (it.status === 'sold' ? itemCalc(it).profit : 0));
+  const has = m.sales > 0, c = Math.round(Math.abs(m.profit) * 100), delta = m.profit - prev.profit;
+  const tied = tiedUp(), avgDays = m.days.length ? Math.round(sum(m.days) / m.days.length) : null;
+  const vals = months.map((k) => stats[k].profit), active = vals.filter((v) => v > 0);
+  const maxV = Math.max(100, ...vals.map(Math.abs)) * 1.12, BH = 180, avg = active.length ? sum(active) / active.length : 0;
+  const total = sum(m.where) || 1;
+  const NAMES = [['Purchase', '--c-purchase'], ['Fees', '--c-fees'], ['Shipping', '--c-ship'], ['Gas', '--c-gas'], ['Tolls', '--c-tolls'], ['Extras', '--c-extras'], ['Profit', '--c-profit']];
+  const idx = months.indexOf(sel);
+  return `<div class="mhead"><div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap"><h1 class="h1" aria-live="polite" style="min-width:min(380px,100%)">${monthName(sel)}</h1>
+    <button class="icb" aria-label="Previous month" data-act="month" data-v="${months[idx - 1] || ''}" ${idx <= 0 ? 'disabled' : ''}>${ic('left', 18)}</button><button class="icb" aria-label="Next month" data-act="month" data-v="${months[idx + 1] || ''}" ${idx >= 11 ? 'disabled' : ''}>${ic('right', 18)}</button></div>
+    <button class="btn btn-sec btn-sm" style="background:var(--s1);box-shadow:var(--card-shadow)" data-act="exportMonth" data-v="${sel}">${ic('export', 16)}Export CSV</button></div>
+  <div class="kgrid">
+    <div class="k hero"><small>Net profit</small><div style="display:flex;flex-direction:column;gap:12px">${has ? priceHTML(m.profit, m.profit < 0 ? 'var(--neg)' : 'var(--pos)') : '<div class="price" style="color:var(--t3)"><span class="d">$0</span></div>'}
+      <span style="font-size:15px;color:var(--t2)">${has ? 'From ' + m.sales + (m.sales === 1 ? ' sale' : ' sales') : 'Nothing sold'} · ${whole(allTime)} all time</span>
+      ${prev.sales || has ? `<span style="font-size:13px;font-weight:600;color:${delta >= 0 ? 'var(--pos)' : 'var(--neg)'}">${delta >= 0 ? '+' : MINUS}${money(Math.abs(delta))} vs ${monthName(prevKey).split(' ')[0]}</span>` : ''}</div></div>
+    <div class="k"><small>Revenue</small><b>${has ? whole(m.revenue) : '–'}</b><span>What buyers paid</span></div>
+    <div class="k"><small>Sales</small><b>${m.sales}</b><span>Items and parts sold</span></div>
+    <div class="k"><small>Bought</small><b>${m.bought}</b><span>Items and PCs</span></div>
+    <div class="k"><small>Spent</small><b>${whole(m.spent)}</b><span>Purchases, gas, tolls, extras</span></div>
+    <div class="k"><small>Avg profit</small><b>${has ? whole(m.profit / m.sales) : '–'}</b><span>Per sale</span></div>
+    <div class="k"><small>ROI</small><b>${has && m.moneyIn ? Math.round(m.profit / m.moneyIn * 100) + '%' : '–'}</b><span>Profit ÷ money in</span></div>
+    <div class="k"><small>Days to sell</small><b>${avgDays == null ? '–' : avgDays}</b><span>Average, bought to sold</span></div>
+    <div class="k"><small>Money tied up</small><b>${whole(tied.v)}</b><span>${tied.c} unsold right now</span></div>
+  </div>
+  <section class="panel" style="padding:24px 24px 16px;display:flex;flex-direction:column;gap:24px"><div class="ph"><h2>Profit by month</h2><span>Tap a month to open it</span></div>
+    <div class="chart"><div aria-hidden="true" style="position:absolute;left:0;right:0;bottom:26px;height:1px;background:var(--line)"></div>
+    ${avg ? `<div aria-hidden="true" style="position:absolute;left:0;right:0;bottom:${(26 + avg / maxV * BH).toFixed(0)}px;border-top:1px dashed var(--t3);opacity:.6"><span style="position:absolute;right:0;top:-20px;font-size:12px;color:var(--t3)">avg ${whole(avg)}</span></div>` : ''}
+    ${months.map((k, i) => { const v = vals[i], on = k === sel, h = v > 0 ? Math.max(4, v / maxV * BH) : 2; return `<button class="barb" aria-pressed="${on}" aria-label="${monthName(k)}, ${money(v)} profit" data-act="month" data-v="${k}"><span class="bv" style="visibility:${on && v ? 'visible' : 'hidden'};color:${v < 0 ? 'var(--neg)' : 'var(--pos)'}">${whole(v)}</span><i style="height:${h.toFixed(0)}px;background:${on ? (v < 0 ? 'var(--neg)' : 'var(--pos)') : v > 0 ? 'var(--bar)' : 'var(--s3)'}"></i><span class="bm">${monthShort(k)}</span></button>`; }).join('')}</div></section>
+  <section class="panel" style="padding:24px;display:flex;flex-direction:column;gap:16px"><div class="ph"><h2>Where the money went</h2><span>${has ? 'Shares of ' + whole(m.revenue) + ' revenue' : ''}</span></div>
+    ${has ? `<div aria-hidden="true" class="cbar">${m.where.map((v, i) => v > 0 ? `<i style="flex:${v} 1 0;background:var(${NAMES[i][1]})"></i>` : '').join('')}</div>
+    <div class="legs">${NAMES.map(([nm, v], i) => `<div class="leg"><span style="width:8px;height:8px;border-radius:4px;background:var(${v})"></span><span>${nm}</span><span style="font-size:13px;color:var(--t3);text-align:right">${(m.where[i] / total * 100).toFixed(1)}%</span><span style="text-align:right;font-weight:${nm === 'Profit' ? 600 : 400};color:${nm === 'Profit' ? 'var(--pos)' : 'var(--t1)'}">${money(m.where[i])}</span></div>`).join('')}</div>
+    <span style="font-size:12px;color:var(--t3)">A parted-out PC's price is split across its parts by sell price, and each part counts in the month it sells.</span>` : `<p style="margin:0;font-size:15px;color:var(--t2)">Nothing sold in ${monthName(sel)}.</p>`}</section>
+  <section class="panel" style="padding:24px 12px 8px;display:flex;flex-direction:column;gap:16px"><div class="ph" style="padding:0 12px"><h2>Activity</h2><span>${m.rows.length ? m.rows.length + ' items touched · open a row for details' : ''}</span></div>
+    ${m.rows.length ? `<div style="overflow-x:auto"><div role="table" aria-label="Activity"><div role="row" class="ar ah"><span>Item</span><span>Status</span><span>Viewed</span><span>Bought</span><span>Sold</span><span>Days</span><span>Paid</span><span>Sold for</span><span>Costs</span><span>Profit</span></div>
+    ${m.rows.map((r) => `<button role="row" class="ar" data-act="open" data-id="${r.id}"><span><b style="font-weight:600">${esc(r.name)}</b> <span style="color:var(--t2)">${esc(r.brand)}</span> <span style="font-size:12px;color:var(--t3)">${esc(r.note)}</span></span><span><span class="pill st-${r.st}"><i></i>${ST_LABEL[r.st]}</span></span><span style="color:var(--t2)">${r.viewed}</span><span style="color:var(--t2)">${r.bought}</span><span style="color:var(--t2)">${r.sold}</span><span style="color:var(--t2)">${r.days}</span><span>${r.paid}</span><span>${r.soldFor}</span><span style="color:var(--t2)">${r.costs}</span><span style="font-weight:600;color:${r.profit ? r.pc : 'var(--t3)'}">${r.profit || '–'}</span></button>`).join('')}</div></div>` : `<p style="margin:0;padding:8px 12px 16px;font-size:15px;color:var(--t2)">No activity in ${monthName(sel)}.</p>`}</section>`;
+}
+
+/* ================= Settings ================= */
+function viewSettings() {
+  const s = S.settings, ex = S.items.some((i) => i.example);
+  const sf = (path, val, o = {}) => `<div class="sf" style="width:${o.w || 112}px">${o.pre ? `<span>${o.pre}</span>` : ''}<input aria-label="${esc(o.label || '')}" data-f="${path}" value="${esc(val)}" inputmode="${o.mode || 'decimal'}"${o.max ? ` maxlength="${o.max}"` : ''}${o.mono ? ` style="font-family:'Geist Mono',ui-monospace,monospace;font-size:14px"` : ''}>${o.suf ? `<span>${o.suf}</span>` : ''}</div>`;
+  const srow = (label, ctl) => `<div class="row"><span class="lb">${label}</span><div class="val" style="align-self:center">${ctl}</div></div>`;
+  return `<h1 class="h1">Settings</h1>
+  <div class="set-cols">
+    <div style="flex:1 1 520px;max-width:760px">
+      <section class="grp"><h2>Categories and quick picks</h2><div class="list">
+        ${Object.keys(s.cats).map((c) => `<div class="row" style="flex-direction:column;align-items:stretch;gap:12px;padding:16px">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px"><span style="font-size:15px;font-weight:500">${esc(c)} <span style="font-size:13px;font-weight:400;color:var(--t3)">${s.cats[c].length ? s.cats[c].length + ' quick picks' : 'No quick picks yet'}</span></span><button class="btn btn-plain btn-sm" data-act="rmCat" data-v="${esc(c)}" aria-label="Remove the ${esc(c)} category">Remove</button></div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">${s.cats[c].map((p) => `<span class="qp">${esc(p)}<button data-act="rmPick" data-c="${esc(c)}" data-v="${esc(p)}" aria-label="Remove ${esc(p)}">${ic('x', 14)}</button></span>`).join('')}
+          <div class="fld" style="height:30px;width:180px"><input aria-label="Add a quick pick to ${esc(c)}" placeholder="Add to ${esc(c)}…" data-addpick="${esc(c)}"></div></div></div>`).join('')}
+        <div class="row" style="gap:8px;padding:12px 16px"><div class="fld" style="flex:0 1 280px;border-radius:12px"><input aria-label="New category name" placeholder="Add a category, like Laptops" data-addcat="1"></div><button class="btn btn-sec btn-sm" data-act="addCat">Add category</button></div>
+      </div><p>Quick picks show as one-tap chips on Estimate. Press Return to add one.</p></section>
+    </div>
+    <div style="flex:1 1 380px;max-width:520px">
+      <section class="grp"><h2>You and your car</h2><div class="list">
+        ${srow('Home ZIP', sf('set.homeZip', s.homeZip, { mode: 'numeric', max: 5, mono: true, label: 'Home ZIP' }))}
+        ${srow('Fuel economy', sf('set.mpg', s.mpg, { suf: 'mpg', label: 'MPG' }))}
+        ${srow('Gas price', sf('set.gas', s.gas, { pre: '$', suf: '/gal', w: 132, label: 'Gas price' }))}
+        ${swRow('Count round trip by default', 'set.roundTrip', s.roundTrip)}
+        ${srow('Default target profit', sf('set.target', s.target, { pre: '$', label: 'Default target profit' }))}
+        ${srow('Warn when unsold after', sf('set.warnDays', s.warnDays, { suf: 'days', label: 'Days before warning' }))}
+      </div><p>Your home ZIP measures every drive. Defaults apply to new estimates.</p></section>
+      <section class="grp"><h2>Fees</h2><div class="list">
+        ${srow('PayPal G&amp;S', `<div style="display:flex;align-items:center;gap:8px">${sf('set.paypalPct', s.paypalPct, { suf: '%', w: 92, label: 'PayPal percent' })}<span style="color:var(--t3)">+</span>${sf('set.paypalFixed', s.paypalFixed, { pre: '$', w: 84, label: 'PayPal fixed fee' })}</div>`)}
+        ${srow('eBay', `<div style="display:flex;align-items:center;gap:8px">${sf('set.ebayPct', s.ebayPct, { suf: '%', w: 92, label: 'eBay percent' })}<span style="color:var(--t3)">+</span>${sf('set.ebayFixed', s.ebayFixed, { pre: '$', w: 84, label: 'eBay per-order fee' })}</div>`)}
+        ${srow('Cash / local', '<span style="color:var(--t3)">No fees</span>')}
+      </div><p>A parted-out PC pays the fee once per part sold.</p></section>
+      <section class="grp"><h2>Shipping estimate by distance</h2><div class="list">
+        ${['Under 300 mi', '300 to 800 mi', '800 to 1,500 mi', 'Over 1,500 mi'].map((l, i) => srow(l, sf('set.tiers.' + i, s.tiers[i], { pre: '$', w: 100, label: l }))).join('')}
+      </div><p>Used when you enter a buyer ZIP. Distance is measured from your home ZIP.</p></section>
+      <section class="grp"><h2>Appearance</h2><div class="list">${srow('Theme', `<div style="width:260px">${seg('set.theme', s.theme, [['system', 'System'], ['light', 'Light'], ['dark', 'Dark']])}</div>`)}</div></section>
+      <section class="grp"><h2>Data</h2><div class="list">
+        ${ex ? srow('Example items <span style="color:var(--t3)">' + S.items.filter((i) => i.example).length + '</span>', '<button class="btn btn-sec btn-sm" data-act="rmExamples">Remove examples</button>') : srow('Example items', '<button class="btn btn-sec btn-sm" data-act="loadExamples">Load examples</button>')}
+        ${srow('Everything, as a spreadsheet', `<button class="btn btn-sec btn-sm" data-act="exportAll">${ic('export', 16)}Export CSV</button>`)}
+        ${srow('Back up or move to another device', `<div style="display:flex;gap:8px"><button class="btn btn-sec btn-sm" data-act="backup">Back up</button><label class="btn btn-sec btn-sm" style="cursor:pointer">Restore<input type="file" accept="application/json" data-restore="1" class="sr"></label></div>`)}
+        ${S.ui.setConfirm === 'reset' ? `<div class="row" role="alert"><span class="lb" style="color:var(--neg);font-weight:500">Erase every item and setting?</span><div class="val" style="align-self:center;gap:8px"><button class="btn btn-plain btn-sm" data-act="keepReset">Keep</button><button class="btn btn-solid-del btn-sm" data-act="reset">Erase</button></div></div>` : srow('Start over', '<button class="btn btn-del btn-sm" data-act="askReset">Erase everything</button>')}
+      </div><p>Everything is saved in this browser on this device. Use Back up to keep a copy or move it to another device.</p></section>
+    </div>
+  </div>`;
+}
+
+/* ================= Data helpers ================= */
+const curItem = () => S.items.find((i) => i.id === S.ui.sheet);
+function rootOf(r) { return r === 'est' ? S.est : r === 'item' ? curItem() : r === 'set' ? S.settings : r === 'route' ? S.route : r === 'ui' ? S.ui : null; }
+function setPath(path, val) {
+  const parts = path.split('.'), obj0 = rootOf(parts.shift());
+  if (!obj0) return;
+  let o = obj0;
+  for (let i = 0; i < parts.length - 1; i++) { if (o[parts[i]] == null) o[parts[i]] = {}; o = o[parts[i]]; }
+  o[parts[parts.length - 1]] = val;
+}
+function getPath(path) { const parts = path.split('.'); let o = rootOf(parts.shift()); for (const k of parts) { if (o == null) return undefined; o = o[k]; } return o; }
+function download(name, text, type) {
+  const blob = new Blob([text], { type: type || 'text/plain' }), a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+}
+const csvCell = (v) => { const s = String(v == null ? '' : v); return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+const toCSV = (rows) => rows.map((r) => r.map(csvCell).join(',')).join('\n');
+function itemFromDraft(status) {
+  const d = S.est, pc = d.mode === 'pc', t = today();
+  const it = baseItem({ kind: pc ? 'pc' : 'single', status, name: pc ? (d.pcName || 'PC') : (d.item || 'Untitled'), brand: pc ? '' : d.brand, category: pc ? 'PC' : d.category,
+    buy: pc ? d.pcBuy : d.buy, sell: d.sell, pay: d.pay, shipping: d.shipping, buyerShip: d.buyerShip, extras: d.extras, sellerZip: d.sellerZip, miles: d.miles, hours: d.hours,
+    mpg: d.mpg, gasPrice: d.gasPrice, roundTrip: d.roundTrip, tolls: d.tolls, tollEach: d.tollEach, avoidMi: d.avoidMi, avoidMin: d.avoidMin,
+    parts: pc ? d.parts.map((p) => Object.assign({}, p, { id: uid(), sold: '' })) : [], wholeSell: d.wholeSell, wholeShip: d.wholeShip, dates: { viewed: t } });
+  if (status === 'bought') it.dates.bought = t;
+  return it;
+}
+function restatus(it) {
+  if (it.status === 'passed') return;
+  let st = 'viewing';
+  STATUSES.forEach((k) => { if (it.dates[DK[k]]) st = k; });
+  if (it.kind === 'pc') { if (st === 'sold' && it.parts.some((p) => !p.sold)) st = 'listed'; }
+  it.status = st;
+}
+
+/* ================= Actions ================= */
+function act(name, el) {
+  const v = el.dataset.v, f = el.dataset.f;
+  const it = curItem();
+  switch (name) {
+    case 'set': {
+      const val = v === 'true' ? true : v === 'false' ? false : v;
+      setPath(f, val);
+      if (f === 'set.theme') applyTheme();
+      if (f.indexOf('item.') === 0) { render(); }
+      else if (f.indexOf('route.') === 0) { render(); }
+      else render();
+      saveSoon(); break;
+    }
+    case 'toggle': setPath(f, !getPath(f)); render(); saveSoon(); break;
+    case 'pick': { S.est.item = v; const inp = $('#f-est-item'); if (inp) inp.value = v; refreshEst(); saveSoon(); break; }
+    case 'savePick': { const c = S.est.category, x = S.est.item.trim(); if (!x) break; S.settings.cats[c] = (S.settings.cats[c] || []).concat([x]); refreshEst(); toast(x + ' added to ' + c + ' quick picks'); saveSoon(); break; }
+    case 'addPart': { const t = el.dataset.t, target = t === 'est' ? S.est : it; target.parts.push({ id: uid(), cat: 'GPU', model: '', sell: '', ship: '', sold: '' }); render(); const ins = document.querySelectorAll(`[data-f^="${t}.parts.${target.parts.length - 1}.model"]`); if (ins[0]) ins[0].focus(); saveSoon(); break; }
+    case 'rmPart': { const t = el.dataset.t, target = t === 'est' ? S.est : it; target.parts.splice(+el.dataset.i, 1); if (t === 'item') syncPcStatus(it); render(); saveSoon(); break; }
+    case 'partSold': { const p = it.parts[+el.dataset.i]; p.sold = p.sold ? '' : today(); syncPcStatus(it); render(); if (p.sold) toast((p.model || 'Part') + ' marked sold'); saveSoon(); break; }
+    case 'saveEst': {
+      const { r } = estCalc();
+      if (r.rev === 0 && r.buy === 0) { toast('Add a buy and sell price first'); break; }
+      const nItem = itemFromDraft(v); S.items.unshift(nItem); saveSoon(); renderNav();
+      toast(nItem.name + ' saved to ' + ST_LABEL[v]); break;
+    }
+    case 'clearEst': S.est = blankDraft(S.settings); S.ui.lastProfit = null; S.ui.zipMsg = ''; S.ui.shipMsg = ''; render(); toast('Cleared'); saveSoon(); break;
+    case 'example': S.est = Object.assign(exampleDraft(S.settings), { mode: S.est.mode }); render(); saveSoon(); break;
+    case 'openResult': S.ui.resultOpen = true; renderOverlay(); break;
+    case 'closeResult': S.ui.resultOpen = false; renderOverlay(); break;
+    case 'filter': S.ui.filter = v; render(); break;
+    case 'open': S.ui.sheet = el.dataset.id; S.ui.confirm = false; renderOverlay(); setTimeout(() => { const d = $('.sheet .sheet-top button'); if (d) d.focus(); }, 50); break;
+    case 'closeSheet': S.ui.sheet = null; S.ui.confirm = false; render(); if (v === 'save') toast('Saved'); saveSoon(); break;
+    case 'stamp': {
+      const idx = STATUSES.indexOf(v), t = today();
+      if (it.kind === 'pc' && v === 'sold') { it.parts.forEach((p) => { if (!p.sold) p.sold = t; }); syncPcStatus(it); }
+      STATUSES.slice(0, idx + 1).forEach((k) => { if (!it.dates[DK[k]]) it.dates[DK[k]] = t; });
+      delete it.dates.passed; it.status = v; if (it.kind === 'pc') syncPcStatus(it);
+      render(); toast(it.name + ' marked ' + ST_LABEL[it.status]); saveSoon(); break;
+    }
+    case 'pass': it.status = 'passed'; it.dates.passed = today(); render(); toast(it.name + ' marked passed'); saveSoon(); break;
+    case 'askDelete': S.ui.confirm = true; renderOverlay(); break;
+    case 'keep': S.ui.confirm = false; renderOverlay(); break;
+    case 'delete': { const nm = it.name; S.items = S.items.filter((i) => i.id !== it.id); S.ui.sheet = null; S.ui.confirm = false; render(); toast(nm + ' deleted'); saveSoon(); break; }
+    case 'check': it.checks[el.dataset.i] = !it.checks[el.dataset.i]; renderOverlay(); saveSoon(); break;
+    case 'month': if (v) { S.ui.month = v; render(); } break;
+    case 'routeTo': S.route.to = v; render(); saveSoon(); break;
+    case 'useRoute': {
+      const d = routeData(); if (!d.ok) { toast('Add both ZIPs first'); break; }
+      Object.assign(S.est, { sellerZip: S.route.to, miles: String(d.take.mi), hours: d.take.hrs.toFixed(1), tollEach: S.route.tollEach, avoidMi: S.route.avoidMi, avoidMin: S.route.avoidMin, tolls: d.avoid ? 'avoid' : 'take' });
+      saveSoon(); location.hash = '#estimate'; setTimeout(() => toast('Route added to the estimate'), 50); break;
+    }
+    case 'rmCat': delete S.settings.cats[v]; render(); saveSoon(); break;
+    case 'rmPick': S.settings.cats[el.dataset.c] = S.settings.cats[el.dataset.c].filter((x) => x !== v); render(); saveSoon(); break;
+    case 'addCat': { const inp = $('[data-addcat]'); addCategory(inp && inp.value); break; }
+    case 'rmExamples': { const k = S.items.filter((i) => i.example).length; S.items = S.items.filter((i) => !i.example); render(); toast(k + ' examples removed'); saveSoon(); break; }
+    case 'loadExamples': S.items = S.items.concat(seedExamples()); render(); toast('Examples loaded'); saveSoon(); break;
+    case 'exportAll': {
+      const rows = [['Name', 'Brand', 'Category', 'Kind', 'Status', 'Viewed', 'Bought', 'Listed', 'Sold', 'Paid', 'Sell / sold for', 'Fees', 'Shipping', 'Gas', 'Tolls', 'Extras', 'Profit', 'Paid with', 'Seller ZIP', 'Miles one way', 'Notes']];
+      S.items.forEach((i) => { const r = itemCalc(i); rows.push([i.name, i.brand, i.category, i.kind, statusOf(i), i.dates.viewed, i.dates.bought, i.dates.listed, i.dates.sold, n(i.buy), r.rev.toFixed(2), r.fees.toFixed(2), r.ship.toFixed(2), r.gas.toFixed(2), r.tolls.toFixed(2), r.extras.toFixed(2), r.profit.toFixed(2), i.pay, i.sellerZip, i.miles, i.notes]); });
+      download('flip-ledger-' + today() + '.csv', toCSV(rows), 'text/csv'); break;
+    }
+    case 'exportMonth': {
+      const m = monthStats(v), rows = [['Item', 'Status', 'Viewed', 'Bought', 'Sold', 'Days', 'Paid', 'Sold for', 'Costs', 'Profit']];
+      m.rows.forEach((r) => rows.push([r.name + (r.brand ? ' ' + r.brand : ''), ST_LABEL[r.st], r.viewed, r.bought, r.sold, r.days, r.paid, r.soldFor, r.costs, r.profit]));
+      rows.push([]); rows.push(['Net profit', m.profit.toFixed(2)]); rows.push(['Revenue', m.revenue.toFixed(2)]); rows.push(['Sales', m.sales]);
+      download('flip-ledger-' + v + '.csv', toCSV(rows), 'text/csv'); break;
+    }
+    case 'backup': download('flip-ledger-backup-' + today() + '.json', JSON.stringify({ settings: S.settings, items: S.items, est: S.est, route: S.route }, null, 2), 'application/json'); break;
+    case 'askReset': S.ui.setConfirm = 'reset'; render(); break;
+    case 'keepReset': S.ui.setConfirm = ''; render(); break;
+    case 'reset': try { localStorage.removeItem(KEY); } catch (e) {} S.settings = DEFAULT_SETTINGS(); S.items = []; S.est = blankDraft(S.settings); S.ui.setConfirm = ''; applyTheme(); render(); toast('Everything erased'); saveSoon(); break;
+  }
+}
+function addCategory(name) {
+  name = String(name || '').trim(); if (!name) return;
+  if (!S.settings.cats[name]) S.settings.cats[name] = [];
+  render(); toast(name + ' added'); saveSoon();
+}
+
+/* ================= Field input ================= */
+function handleField(el) {
+  const path = el.dataset.f, val = el.type === 'checkbox' ? el.checked : el.value, root = path.split('.')[0];
+  setPath(path, val);
+  const home = S.settings.homeZip;
+  if (root === 'est') {
+    const k = path.slice(4);
+    if (k === 'sellerZip') {
+      S.ui.zipMsg = '';
+      if (/^\d{5}$/.test(val)) {
+        if (!/^\d{5}$/.test(home)) S.ui.zipMsg = 'Add your home ZIP in Settings to fill miles.';
+        else milesBetween(home, val).then((res) => {
+          if (S.est.sellerZip !== val) return;
+          if (res) { S.est.miles = String(res.mi); S.est.hours = String(res.hrs); const a = $('#f-est-miles'), b = $('#f-est-hours'); if (a) a.value = S.est.miles; if (b) b.value = S.est.hours; S.ui.zipMsg = `Filled from ${res.b.city}, ${res.b.st}.`; }
+          else S.ui.zipMsg = "Couldn't look up that ZIP. Enter the miles by hand.";
+          refreshEst(); saveSoon();
+        });
+      }
+    }
+    if (k === 'buyerZip') {
+      S.ui.shipMsg = '';
+      if (/^\d{5}$/.test(val) && /^\d{5}$/.test(home) && S.est.mode !== 'pc') milesBetween(home, val).then((res) => {
+        if (!res || S.est.buyerZip !== val) return;
+        S.est.shipping = String(tierFor(res.mi)); const s = $('#f-est-shipping'); if (s) s.value = S.est.shipping;
+        S.ui.shipMsg = `About ${res.mi} mi to ${res.b.city}, so shipping is set to $${S.est.shipping}. `; refreshEst(); saveSoon();
+      });
+    }
+    if (el.tagName === 'SELECT' && k !== 'category') render(); else refreshEst();
+  } else if (root === 'item') {
+    const it = curItem(); if (!it) return;
+    if (path.indexOf('item.dates.') === 0) { if (!val) delete it.dates[path.split('.')[2]]; restatus(it); render(); }
+    else if (el.tagName === 'SELECT') { render(); }
+    else {
+      refreshSheet(); $('#main').innerHTML = ({ estimate: viewEstimate, inventory: viewInventory, route: viewRoute, monthly: viewMonthly, settings: viewSettings })[S.ui.screen]();
+      if (path === 'item.sellerZip' && /^\d{5}$/.test(val) && /^\d{5}$/.test(home)) milesBetween(home, val).then((res) => {
+        if (!res || it.sellerZip !== val) return; it.miles = String(res.mi); it.hours = String(res.hrs);
+        const a = $('#f-item-miles'), b = $('#f-item-hours'); if (a) a.value = it.miles; if (b) b.value = it.hours; refreshSheet(); saveSoon();
+      });
+    }
+  } else if (root === 'set') {
+    if (path === 'set.homeZip' && /^\d{5}$/.test(val)) lookupZip(val).then(() => { if (S.ui.screen === 'route') refreshRoute(); });
+    if (S.ui.screen === 'route') refreshRoute();
+  } else if (root === 'route') {
+    if (path === 'route.to' && /^\d{5}$/.test(val)) lookupZip(val).then(() => refreshRoute());
+    refreshRoute();
+  } else if (root === 'ui') {
+    const box = $('#invItems'); if (box) box.innerHTML = invItemsHTML(filteredItems());
+  }
+  saveSoon();
+}
+
+/* ================= Wiring ================= */
+document.addEventListener('click', (e) => {
+  const t = e.target.closest('[data-act]');
+  if (!t || t.disabled) return;
+  if (t.tagName === 'A') return;
+  e.preventDefault();
+  act(t.dataset.act, t);
+});
+document.addEventListener('input', (e) => { const el = e.target; if (el.dataset && el.dataset.f && el.tagName !== 'SELECT') handleField(el); });
+document.addEventListener('change', (e) => {
+  const el = e.target;
+  if (el.dataset && el.dataset.restore) {
+    const file = el.files && el.files[0]; if (!file) return;
+    file.text().then((txt) => {
+      try { const d = JSON.parse(txt); if (!Array.isArray(d.items)) throw new Error('bad'); S.items = d.items; S.settings = Object.assign(DEFAULT_SETTINGS(), d.settings); if (d.est) S.est = Object.assign(blankDraft(S.settings), d.est); if (d.route) S.route = Object.assign(S.route, d.route); applyTheme(); render(); toast('Backup restored'); saveSoon(); }
+      catch (err) { toast("That file isn't a Flip Ledger backup"); }
+    });
+    return;
+  }
+  if (el.dataset && el.dataset.f && el.tagName === 'SELECT') handleField(el);
+});
+document.addEventListener('keydown', (e) => {
+  const el = e.target;
+  if (e.key === 'Enter' && el.dataset) {
+    if (el.dataset.addpick) { const c = el.dataset.addpick, v = el.value.trim(); if (v && S.settings.cats[c].indexOf(v) < 0) { S.settings.cats[c].push(v); render(); saveSoon(); const nx = document.querySelector(`[data-addpick="${CSS.escape(c)}"]`); if (nx) nx.focus(); } return; }
+    if (el.dataset.addcat) { addCategory(el.value); return; }
+  }
+  if (e.key === 'Escape') {
+    if (S.ui.sheet) { S.ui.sheet = null; S.ui.confirm = false; render(); }
+    else if (S.ui.resultOpen) { S.ui.resultOpen = false; renderOverlay(); }
+  }
+});
+let dragY = null, dragEl = null;
+document.addEventListener('pointerdown', (e) => { const t = e.target.closest('#pbar,[data-drag]'); if (t) { dragY = e.clientY; dragEl = t; } });
+document.addEventListener('pointerup', (e) => {
+  if (dragY == null) return;
+  const dy = e.clientY - dragY, t = dragEl; dragY = null; dragEl = null;
+  if (t.id === 'pbar' && dy < -16) { S.ui.resultOpen = true; renderOverlay(); }
+  else if (t.dataset.drag === 'close' && dy > 40) { S.ui.resultOpen = false; renderOverlay(); }
+  else if (t.dataset.drag === 'closeSheet' && dy > 40) { S.ui.sheet = null; render(); }
+});
+function route() {
+  const h = (location.hash || '#estimate').slice(1);
+  S.ui.screen = SCREENS.some(([k]) => k === h) ? h : 'estimate';
+  S.ui.resultOpen = false; S.ui.lastProfit = null;
+  render(); window.scrollTo(0, 0);
+}
+window.addEventListener('hashchange', route);
+let rz = 0;
+window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (S.ui.screen === 'route') drawMap(); if (!narrow() && S.ui.resultOpen) { S.ui.resultOpen = false; renderOverlay(); } }, 120); });
+
+/* ================= Start ================= */
+loadState();
+applyTheme();
+route();
+[S.settings.homeZip, S.route.to].forEach((z) => { if (/^\d{5}$/.test(z) && !S.zip[z]) lookupZip(z).then(() => { if (S.ui.screen === 'route') refreshRoute(); }); });
+</script>
+</body>
+</html>
